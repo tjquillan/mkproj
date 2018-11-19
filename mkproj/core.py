@@ -19,7 +19,7 @@ class LangManager():
         return self._langs
     
     def create(self, project_name: str, lang: str, git: bool):
-        project_path = Path("{0}/{1}".format(config.get("core","projectsDir"), project_name))
+        project_path = Path("{0}/{1}".format(Path.cwd(), project_name))
 
         if project_path.exists():
             echo("{0} Project already exists. Aborting...".format(crayons.red("=>")))

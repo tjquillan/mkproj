@@ -6,11 +6,7 @@ config_file = "{0}/.config/mkproj/mkproj.conf".format(Path.home())
 config = configparser.ConfigParser()
 config.read(config_file)
 
-default_values = {
-    'core': {
-        'projectsDir': "{0}/projects".format(Path.home())
-    }
-}
+default_values = {'core': {}}
 
 def add_section_defaults(section: dict):
     default_values.update(section)
