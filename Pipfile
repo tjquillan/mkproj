@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-click = "*"
 
 [dev-packages]
 mkproj = {path = ".", editable = true}
@@ -12,6 +11,7 @@ pylint = "*"
 ipython = "*"
 invoke = "*"
 requests = "*"
+click = "*"
 
 [requires]
 python_version = "3.7"
