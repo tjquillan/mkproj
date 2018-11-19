@@ -19,7 +19,6 @@ setup(
     author='iboyperson',
     author_email='tjquillan@gmail.com',
     description='An application to manage dotfiles efficiently with GNU Stow',
-    install_requires=['click'],
     entry_points={
         'console_scripts': [
             'mkproj = mkproj:cli',
@@ -28,4 +27,5 @@ setup(
     package_data={
         "": "LICENSE",
     },
+    include_package_data=True,
 )
