@@ -4,16 +4,11 @@ from click import (
     argument, command, echo, edit, group, option, pass_context, secho, version_option
 )
 
-import click_completion
-
 from ..__version__ import __version__
 from ..subprocess import set_verbosity
 from .options import (
     CONTEXT_SETTINGS, LANG_MANAGER, lang_option, pass_state
 )
-
-# Enable shell completion.
-click_completion.init()
 
 @command(context_settings=CONTEXT_SETTINGS)
 @lang_option

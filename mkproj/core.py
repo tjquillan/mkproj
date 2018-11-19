@@ -1,4 +1,5 @@
 from click import echo
+import crayons
 from pathlib import Path
 import sys
 
@@ -6,7 +7,6 @@ from . import config
 from .base_lang import BaseLang
 from .langs import (python)
 from .subprocess import call
-from .vendor import crayons
 
 class LangManager():
     def __init__(self):

@@ -1,10 +1,10 @@
+import crayons
 from pathlib import Path
 import os
 
 from click import echo
 
 from ..subprocess import call
-from ..vendor import crayons
 from ..base_lang import BaseLang
 from .. import config
 
