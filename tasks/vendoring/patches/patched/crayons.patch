@@ -1,7 +1,7 @@
 diff --git a/pipenv/patched/crayons.py b/pipenv/patched/crayons.py
 index 455d3e90..de735daf 100644
---- a/pipenv/patched/crayons.py
-+++ b/pipenv/patched/crayons.py
+--- a/mkproj/patched/crayons.py
++++ b/mkproj/patched/crayons.py
 @@ -12,41 +12,72 @@ import os
  import re
  import sys

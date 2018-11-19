@@ -363,14 +363,15 @@ def vendor(ctx, vendor_dir, package=None, rewrite=True):
         log('Applying post-patches...')
         patches = patch_dir.glob('*.patch' if not is_patched else '_post*.patch')
         for patch in patches:
+            log(patch)
             apply_patch(ctx, patch)
-        if is_patched:
-            piptools_vendor = vendor_dir / 'piptools' / '_vendored'
-            if piptools_vendor.exists():
-                drop_dir(piptools_vendor)
-            msgpack = vendor_dir / 'notpip' / '_vendor' / 'msgpack'
-            if msgpack.exists():
-                remove_all(msgpack.glob('*.so'))
+        # if is_patched:
+        #     piptools_vendor = vendor_dir / 'piptools' / '_vendored'
+        #     if piptools_vendor.exists():
+        #         drop_dir(piptools_vendor)
+        #     msgpack = vendor_dir / 'notpip' / '_vendor' / 'msgpack'
+        #     if msgpack.exists():
+        #         remove_all(msgpack.glob('*.so'))
 
 
 @invoke.task
