@@ -1,12 +1,11 @@
-import crayons
 from pathlib import Path
 import os
 
 from click import echo
 
+from .. import config, printer, templates
 from ..subprocess import call
 from ..base_lang import BaseLang
-from .. import config
 
 class Python(BaseLang):
     def __init__(self):
@@ -19,13 +18,26 @@ class Python(BaseLang):
         return self._lang
 
     def create(self, project_name: str, project_path: Path):
-        echo("{0} Creating project at '{1}'".format(crayons.blue("=>"), project_path.absolute()))
+        printer.print_info("Creating project at '{0}'".format(project_path.absolute()))
         project_path.mkdir()
 
-        os.chdir(project_path.absolute())
+        printer.print_info("Creating python package '{0}' in project dir".format(project_name))
+        package_dir = Path(project_path.joinpath(Path(project_name)))
+        package_dir.mkdir()
+        open("{0}/__init__.py".format(str(package_dir.absolute())), "a").close()
 
-        echo("{0} Initializing project with pipenv".format(crayons.blue("=>")))
-        call(["pipenv", "install"])
+        printer.print_info("Creating base setup.py")
+        with open("{0}/setup.py".format(str(project_path.absolute())), "w") as setup_file:
+            template = templates.get_template(self._lang, "setup.py")
+            template_data = template.substitute({
+                'name': project_name
+            })
+            print(template_data)
+            setup_file.write(template_data)
+
+        printer.print_info("Initializing project with pipenv")
+        # os.chdir(project_path.absolute())
+        # call(["pipenv", "install"])
 
 
         

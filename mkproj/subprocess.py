@@ -1,14 +1,9 @@
 import subprocess
 
-verbose = False
-
-def set_verbosity(verbosity):
-    global verbose
-    verbose = verbosity
+from .environment import verbosity
 
 def call(command: list):
-    global verbose
-    if verbose:
+    if verbosity:
         subprocess.call(command)
     else:
         subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)

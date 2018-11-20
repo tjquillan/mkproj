@@ -6,7 +6,6 @@ from setuptools import find_packages, setup
 # See https://github.com/pypa/pipenv/blob/master/setup.py
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
-
 with open(os.path.join(here, "mkproj", "__version__.py")) as f:
     exec(f.read(), about)
 

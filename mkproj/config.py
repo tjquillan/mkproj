@@ -6,7 +6,11 @@ config_file = "{0}/.config/mkproj/mkproj.conf".format(Path.home())
 config = configparser.ConfigParser()
 config.read(config_file)
 
-default_values = {'core': {}}
+default_values = {'core': {
+    'fullName': 'John Doe',
+    'email': 'john.doe@gmail.com',
+    'license': 'MIT'
+}}
 
 def add_section_defaults(section: dict):
     default_values.update(section)

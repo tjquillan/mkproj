@@ -1,32 +1,33 @@
 from click import echo
-import crayons
 from pathlib import Path
 import sys
 
-from . import config
+from . import config, subprocess, printer
+from .environment import langs
 from .base_lang import BaseLang
-from .langs import (python)
 from .subprocess import call
 
-class LangManager():
-    def __init__(self):
-        self._langs = {}
-        for lang in BaseLang.__subclasses__():
-            self._langs[lang().lang] = lang()
+def gather_langs():
+    from .langs import (python)
 
-    @property
-    def langs(self) -> dict:
-        return self._langs
-    
-    def create(self, project_name: str, lang: str, git: bool):
-        project_path = Path("{0}/{1}".format(Path.cwd(), project_name))
+    for lang in BaseLang.__subclasses__():
+        langs[lang().lang] = lang()
 
-        if project_path.exists():
-            echo("{0} Project already exists. Aborting...".format(crayons.red("=>")))
-            sys.exit(1)
+def create_project(project_name: str, state):
+    # If langs have not been gathered yet gather them
+    if not len(langs) > 0:
+        gather_langs()
 
-        self._langs[lang].create(project_name, project_path)
+    project_path = Path("{0}/{1}".format(Path.cwd(), project_name))
 
-        if git:
-            echo("{0} Initializing project as git repository".format(crayons.blue("=>")))
-            call(["git", "-C", project_path.absolute(),"init"])
+    if project_path.exists():
+        printer.print_error("Project already exists. Aborting...")
+        sys.exit(1)
+
+    langs[state.lang].create(project_name, project_path)
+
+    if state.git:
+        printer.print_info("Initializing project as git repository")
+        call(["git", "-C", project_path.absolute(),"init"])
+
+
