@@ -25,19 +25,23 @@ class Python(BaseLang):
         package_dir = Path(project_path.joinpath(Path(project_name)))
         package_dir.mkdir()
         open("{0}/__init__.py".format(str(package_dir.absolute())), "a").close()
+        with open("{0}/__version__.py".format(str(package_dir.absolute())), "w") as version_file:
+            version_file.write("__version__ = \"\"")
 
         printer.print_info("Creating base setup.py")
         with open("{0}/setup.py".format(str(project_path.absolute())), "w") as setup_file:
-            template = templates.get_template(self._lang, "setup.py")
-            template_data = template.substitute({
-                'name': project_name
-            })
-            print(template_data)
-            setup_file.write(template_data)
+            templates.write_to_template(setup_file,
+                                        templates.get_template(self._lang, "setup.py"),
+                                        {
+                                            'name': project_name,
+                                            'license': config.get("core", "license"),
+                                            'author': config.get("core", "fullName"),
+                                            'author_email': config.get("core", "email")
+                                        })
 
         printer.print_info("Initializing project with pipenv")
-        # os.chdir(project_path.absolute())
-        # call(["pipenv", "install"])
+        os.chdir(project_path.absolute())
+        call(["pipenv", "install"])
 
 
         

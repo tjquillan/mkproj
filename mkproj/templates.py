@@ -11,5 +11,9 @@ def get_template(section: str, template: str):
         with open(str(template_path.absolute()), "r") as template:
             return Template(template.read())
 
+def write_to_template(file, template: Template, data: dict):
+    file.write(template.substitute(data))
+
+
 
 
