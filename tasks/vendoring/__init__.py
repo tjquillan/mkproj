@@ -1,4 +1,3 @@
-# -*- coding=utf-8 -*-
 """"Vendoring script, python 3.5 needed"""
 # Taken from pipenv
 # see https://github.com/pypa/pipenv/blob/master/tasks/vendoring/__init__.py
