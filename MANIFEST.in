@@ -1,0 +1,14 @@
+include LICENSE README.md
+recursive-include mkproj LICENSE LICENSE* *LICENSE* *COPYING* cacert.pem
+recursive-include mkproj *.md *.APACHE *.BSD
+recursive-include mkproj Makefile
+recursive-include mkproj/templates *.templ
+recursive-include mkproj/vendor vendor.txt
+recursive-include mkproj README
+include mkproj/patched/patched.txt
+include mkproj/vendor/*.txt
+include mkproj/vendor/Makefile
+exclude .editorconfig .travis.yml appveyor.yml tox.ini pytest.ini
+exclude Pipfile*
+
+prune tasks
