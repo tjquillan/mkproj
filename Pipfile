@@ -6,12 +6,11 @@ name = "pypi"
 [packages]
 
 [dev-packages]
-mkproj = {path = ".", editable = true}
+mkproj = {editable = true, path = "."}
 pylint = "*"
 ipython = "*"
 invoke = "*"
 requests = "*"
-click = "*"
 
 [requires]
 python_version = "3.7"
