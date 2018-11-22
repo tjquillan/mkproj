@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 
+
 class BaseLang(metaclass=ABCMeta):
     @property
     @abstractmethod

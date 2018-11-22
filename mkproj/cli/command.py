@@ -1,16 +1,18 @@
-import crayons
-
 from click import (
-    argument, command, echo, edit, group, option, pass_context, secho, version_option
+    argument, command, echo, edit, group, option, pass_context, secho,
+    version_option
 )
 
-from ..__version__ import __version__
+import crayons
+
 from .. import environment
+from ..__version__ import __version__
 from ..config import set_config
 from ..core import create_project
 from .options import (
     CONTEXT_SETTINGS, git_option, lang_option, pass_state, readme_option
 )
+
 
 @command(context_settings=CONTEXT_SETTINGS)
 @lang_option

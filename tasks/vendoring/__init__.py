@@ -1,16 +1,20 @@
 """"Vendoring script, python 3.5 needed"""
 # Taken from pipenv
 # see https://github.com/pypa/pipenv/blob/master/tasks/vendoring/__init__.py
-from tempfile import NamedTemporaryFile, TemporaryDirectory 
-from pathlib import Path
-import tarfile
-import zipfile
+
 import os
 import re
 import shutil
 import sys
+import tarfile
+import zipfile
+
+from pathlib import Path
+from tempfile import NamedTemporaryFile, TemporaryDirectory
+
 import invoke
 import requests
+
 
 TASK_NAME = 'update'
 

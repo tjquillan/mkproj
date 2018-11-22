@@ -2,6 +2,7 @@ import subprocess
 
 from . import environment
 
+
 def call(command: list):
     if environment.verbosity:
         subprocess.call(command)

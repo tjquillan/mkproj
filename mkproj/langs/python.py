@@ -1,11 +1,13 @@
-from pathlib import Path
 import os
+
+from pathlib import Path
 
 from click import echo
 
 from .. import config, printer, templates
-from ..subprocess import call
 from ..base_lang import BaseLang
+from ..subprocess import call
+
 
 class Python(BaseLang):
     def __init__(self):
@@ -42,9 +44,3 @@ class Python(BaseLang):
         printer.print_info("Initializing project with pipenv")
         os.chdir(project_path.absolute())
         call(["pipenv", "install"])
-
-
-
-
-
-
