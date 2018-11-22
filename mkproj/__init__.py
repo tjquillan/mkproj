@@ -12,7 +12,7 @@ sys.path.insert(0, MKPROJ_VENDOR)
 # Inject patched libraries into system path.
 sys.path.insert(0, MKPROJ_PATCHED)
 
-from .cli import cli
+from .cli import cli, mkproj_config
 
 if __name__ == '__main__':
     cli()

@@ -27,6 +27,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mkproj = mkproj:cli',
+            'mkproj-config = mkproj:mkproj_config'
         ]
     },
     package_data={

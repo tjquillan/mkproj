@@ -1,18 +1,19 @@
+from jinja2 import Environment, PackageLoader, select_autoescape, Template
 from pathlib import Path
-from string import Template
 
 from . import MKPROJ_ROOT
 
-templates_dir = Path("{0}/templates".format(MKPROJ_ROOT))
+env = Environment(
+    loader=PackageLoader('mkproj', 'templates'),
+    autoescape=select_autoescape(['j2'])
+)
 
-def get_template(section: str, template: str):
-    template_path = Path("{0}/{1}/{2}.templ".format(str(templates_dir.absolute()), section, template))
-    if template_path.exists():
-        with open(str(template_path.absolute()), "r") as template:
-            return Template(template.read())
+def get(section: str, template: str):
+    template_path = "{0}/{1}.j2".format(section, template)
+    return env.get_template(template_path)
 
-def write_to_template(file, template: Template, data: dict):
-    file.write(template.substitute(data))
+def write_to_file(file, template: Template, data: dict):
+    file.write(template.render(data))
 
 
 

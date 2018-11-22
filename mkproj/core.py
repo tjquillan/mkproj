@@ -2,7 +2,7 @@ from click import echo
 from pathlib import Path
 import sys
 
-from . import config, subprocess, printer
+from . import config, subprocess, printer, templates
 from .environment import langs
 from .base_lang import BaseLang
 from .subprocess import call
@@ -24,7 +24,23 @@ def create_project(project_name: str, state):
         printer.print_error("Project already exists. Aborting...")
         sys.exit(1)
 
-    langs[state.lang].create(project_name, project_path)
+    # Allways make a project dir
+    printer.print_info("Creating project '{0}' at '{1}'".format(project_name, project_path.absolute()))
+    project_path.mkdir()
+
+    # If a language is supplied run creation tasks for the language
+    if state.lang is not None:
+        langs[state.lang].create(project_name, project_path)
+
+    # Run generic creation tasks that apply to all projects
+    if state.readme:
+        printer.print_info("Creating file 'README.md'")
+        with open("{0}/README.md".format(str(project_path.absolute())), "w") as file:
+            templates.write_to_file(file,
+                                    templates.get("base", "README.md"),
+                                    {
+                                        'name': project_name,
+                                    })
 
     if state.git:
         printer.print_info("Initializing project as git repository")
