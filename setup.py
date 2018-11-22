@@ -32,8 +32,14 @@ setup(
     },
     package_data={
         "": ["LICENSE"],
-        "mkproj.templates": ["**/*.templ"]
+        "mkproj.templates": ["**/*.j2"]
     },
     include_package_data=True,
     license='MIT',
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+    ],
 )
