@@ -17,7 +17,10 @@ def gather_langs():
         langs[lang().lang] = lang()
 
 
-def create_project(project_name: str, state):
+from .cli.options import State  # isort:skip
+
+
+def create_project(project_name: str, state: State):
     # If langs have not been gathered yet gather them
     if not len(langs) > 0:
         gather_langs()
