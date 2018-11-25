@@ -1,6 +1,3 @@
-from pathlib import Path
-
-
 # Dictionary of all available languages and their classes
 langs: dict = {}
 

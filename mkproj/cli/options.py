@@ -9,13 +9,16 @@ from ..environment import langs
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
+
 class State(object):
     def __init__(self):
         self.git = False
         self.lang = None
         self.readme = False
 
+
 pass_state = make_pass_decorator(State, ensure=True)
+
 
 def git_option(f):
     def callback(ctx, param, value):
@@ -24,8 +27,16 @@ def git_option(f):
         if value or config.getboolean_config("core", "git"):
             state.git = True
         return value
-    return option("--git", "-g", is_flag=True, expose_value=False, callback=callback,
-                  help="Specify whether to init project with git.", type=click.types.BOOL)(f)
+
+    return option(
+        "--git",
+        "-g",
+        is_flag=True,
+        expose_value=False,
+        callback=callback,
+        help="Specify whether to init project with git.",
+        type=click.types.BOOL,
+    )(f)
 
 
 def lang_option(f):
@@ -37,9 +48,17 @@ def lang_option(f):
             value = value.lower()
             state.lang = check_lang(ctx, param, value)
         return value
-    return option("--lang", "-l", default=None, nargs=1, callback=callback,
-                  help="Specify which language to create project with. If none is specified a generic template will be generated.",
-                  expose_value=False)(f)
+
+    return option(
+        "--lang",
+        "-l",
+        default=None,
+        nargs=1,
+        callback=callback,
+        help="Specify which language to create project with. If none is specified a generic template will be generated.",
+        expose_value=False,
+    )(f)
+
 
 def readme_option(f):
     def callback(ctx, param, value):
@@ -48,8 +67,17 @@ def readme_option(f):
         if value or config.getboolean_config("core", "readme"):
             state.readme = True
         return value
-    return option("--readme", "-r", is_flag=True, expose_value=False, callback=callback,
-                  help="Specify whether to add README to project.", type=click.types.BOOL)(f)
+
+    return option(
+        "--readme",
+        "-r",
+        is_flag=True,
+        expose_value=False,
+        callback=callback,
+        help="Specify whether to add README to project.",
+        type=click.types.BOOL,
+    )(f)
+
 
 def check_lang(ctx, param, value):
     if not len(langs) > 0:

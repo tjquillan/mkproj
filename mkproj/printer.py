@@ -1,4 +1,3 @@
-# import crayons
 from click import echo
 
 import crayons

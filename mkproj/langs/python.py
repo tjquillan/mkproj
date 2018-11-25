@@ -2,8 +2,6 @@ import os
 
 from pathlib import Path
 
-from click import echo
-
 from .. import config, printer, templates
 from ..base_lang import BaseLang
 from ..subprocess import call

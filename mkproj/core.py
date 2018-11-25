@@ -2,9 +2,7 @@ import sys
 
 from pathlib import Path
 
-from click import echo
-
-from . import config, printer, subprocess, templates
+from . import printer, templates
 from .base_lang import BaseLang
 from .environment import langs
 from .subprocess import call
