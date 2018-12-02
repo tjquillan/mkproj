@@ -1,2 +1,2 @@
 format:
-	black mkproj/*.py
+	black mkproj
