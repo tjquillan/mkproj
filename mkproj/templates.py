@@ -1,9 +1,16 @@
 import os
 
-from jinja2 import (ChoiceLoader, Environment, FileSystemLoader, PackageLoader,
-                    Template, select_autoescape)
+from jinja2 import (
+    ChoiceLoader,
+    Environment,
+    FileSystemLoader,
+    PackageLoader,
+    Template,
+    select_autoescape,
+)
 
 from . import environment
+
 
 ENV = Environment(
     loader=ChoiceLoader(

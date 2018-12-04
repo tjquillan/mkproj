@@ -1,5 +1,6 @@
 from appdirs import AppDirs
 
+
 # Dictionary of all available languages and their classes
 APP_DIRS = AppDirs("mkproj", "iboyperson")
 
