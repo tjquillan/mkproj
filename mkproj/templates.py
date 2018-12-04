@@ -1,8 +1,21 @@
-from jinja2 import Environment, PackageLoader, Template, select_autoescape
+import os
 
+from jinja2 import (ChoiceLoader, Environment, FileSystemLoader, PackageLoader,
+                    Template, select_autoescape)
+
+from . import environment
 
 ENV = Environment(
-    loader=PackageLoader("mkproj", "templates"), autoescape=select_autoescape(["j2"])
+    loader=ChoiceLoader(
+        [
+            FileSystemLoader(
+                [os.sep.join([environment.APP_DIRS.user_data_dir, "templates"])],
+                followlinks=True,
+            ),
+            PackageLoader("mkproj", "templates"),
+        ]
+    ),
+    autoescape=select_autoescape(["j2"]),
 )
 
 

@@ -2,15 +2,13 @@ import configparser
 
 from pathlib import Path
 
-from appdirs import AppDirs
+from . import environment
 
 
-DIRS = AppDirs("mkproj", "iboyperson")
+if not Path(environment.APP_DIRS.user_config_dir).exists():
+    Path(environment.APP_DIRS.user_config_dir).mkdir()
 
-if not Path(DIRS.user_config_dir).exists():
-    Path(DIRS.user_config_dir).mkdir()
-
-CONFIG_FILE = "{0}/mkproj.conf".format(DIRS.user_config_dir)
+CONFIG_FILE = "{0}/mkproj.conf".format(environment.APP_DIRS.user_config_dir)
 
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE)
