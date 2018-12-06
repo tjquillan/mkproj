@@ -3,24 +3,18 @@
 # see https://github.com/pypa/pipenv/blob/master/tasks/vendoring/__init__.py
 
 import os
-import re
 import shutil
-import sys
 import tarfile
 import zipfile
 
 from pathlib import Path
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from tempfile import NamedTemporaryFile
 
 import invoke
 import requests
 
 
 TASK_NAME = 'update'
-
-LIBRARY_DIRNAMES = {}
-
-PY2_DOWNLOAD = []
 
 # from time to time, remove the no longer needed ones
 HARDCODED_LICENSE_URLS = {
@@ -40,9 +34,6 @@ FILE_WHITE_LIST = (
     'vendor_pip.txt',
 )
 
-PATCHED_RENAMES = {}
-
-LIBRARY_RENAMES = {}
 
 def mkdir_p(newdir):
     """works the way a good mkdir should :)
@@ -66,6 +57,7 @@ def mkdir_p(newdir):
             mkdir_p(head)
         if tail:
             os.mkdir(newdir)
+
 
 def drop_dir(path):
     if path.exists() and path.is_dir():
@@ -123,141 +115,9 @@ def detect_vendored_libs(vendor_dir):
     return retval
 
 
-def rewrite_imports(package_dir, vendored_libs, vendor_dir):
-    for item in package_dir.iterdir():
-        if item.is_dir():
-            rewrite_imports(item, vendored_libs, vendor_dir)
-        elif item.name.endswith('.py'):
-            rewrite_file_imports(item, vendored_libs, vendor_dir)
-
-
-def rewrite_file_imports(item, vendored_libs, vendor_dir):
-    """Rewrite 'import xxx' and 'from xxx import' for vendored_libs"""
-    # log('Reading file: %s' % item)
-    try:
-        text = item.read_text(encoding='utf-8')
-    except UnicodeDecodeError:
-        text = item.read_text(encoding='cp1252')
-    renames = LIBRARY_RENAMES
-    for k in LIBRARY_RENAMES.keys():
-        if k not in vendored_libs:
-            vendored_libs.append(k)
-    for lib in vendored_libs:
-        to_lib = lib
-        if lib in renames:
-            to_lib = renames[lib]
-        text = re.sub(
-            r'([\n\s]*)import %s([\n\s\.]+)' % lib,
-            r'\1import %s\2' % to_lib,
-            text,
-        )
-        text = re.sub(
-            r'([\n\s]*)from %s([\s\.])+' % lib,
-            r'\1from %s\2' % to_lib,
-            text,
-        )
-        text = re.sub(
-            r"(\n\s*)__import__\('%s([\s'\.])+" % lib,
-            r"\1__import__('%s\2" % to_lib,
-            text,
-        )
-    item.write_text(text, encoding='utf-8')
-
-
 def apply_patch(ctx, patch_file_path):
     log('Applying patch %s' % patch_file_path.name)
     ctx.run('git apply --ignore-whitespace --verbose %s' % patch_file_path)
-
-
-@invoke.task
-def update_safety(ctx):
-    ignore_subdeps = ['pip', 'pip-egg-info', 'bin']
-    ignore_files = ['pip-delete-this-directory.txt', 'PKG-INFO']
-    vendor_dir = _get_patched_dir(ctx)
-    log('Using vendor dir: %s' % vendor_dir)
-    log('Downloading safety package files...')
-    build_dir = vendor_dir / 'build'
-    download_dir = TemporaryDirectory(prefix='mkproj-', suffix='-safety')
-    if build_dir.exists() and build_dir.is_dir():
-        drop_dir(build_dir)
-
-    ctx.run(
-        'pip download -b {0} --no-binary=:all: --no-clean -d {1} safety pyyaml'.format(
-            str(build_dir), str(download_dir.name),
-        )
-    )
-    safety_dir = build_dir / 'safety'
-    yaml_build_dir = build_dir / 'pyyaml'
-    main_file = safety_dir / '__main__.py'
-    main_content = """
-import sys
-yaml_lib = 'yaml{0}'.format(sys.version_info[0])
-locals()[yaml_lib] = __import__(yaml_lib)
-sys.modules['yaml'] = sys.modules[yaml_lib]
-from safety.cli import cli
-
-# Disable insecure warnings.
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning
-urllib3.disable_warnings(InsecureRequestWarning)
-
-cli(prog_name="safety")
-    """.strip()
-    with open(str(main_file), 'w') as fh:
-        fh.write(main_content)
-
-    with ctx.cd(str(safety_dir)):
-        ctx.run('pip install --no-compile --no-binary=:all: -t . .')
-        safety_dir = safety_dir.absolute()
-        yaml_dir = safety_dir / 'yaml'
-        if yaml_dir.exists():
-            version_choices = ['2', '3']
-            version_choices.remove(str(sys.version_info[0]))
-            mkdir_p(str(safety_dir / 'yaml{0}'.format(sys.version_info[0])))
-            for fn in yaml_dir.glob('*.py'):
-                fn.rename(str(safety_dir.joinpath('yaml{0}'.format(sys.version_info[0]), fn.name)))
-            if version_choices[0] == '2':
-                lib = yaml_build_dir / 'lib' / 'yaml'
-            else:
-                lib = yaml_build_dir / 'lib3' / 'yaml'
-            shutil.copytree(str(lib.absolute()), str(safety_dir / 'yaml{0}'.format(version_choices[0])))
-        requests_dir = safety_dir / 'requests'
-        cacert = vendor_dir / 'requests' / 'cacert.pem'
-        if not cacert.exists():
-            import requests
-            cacert = Path(requests.certs.where())
-        target_cert = requests_dir / 'cacert.pem'
-        target_cert.write_bytes(cacert.read_bytes())
-        ctx.run("sed -i 's/r = requests.get(url=url, timeout=REQUEST_TIMEOUT, headers=headers)/r = requests.get(url=url, timeout=REQUEST_TIMEOUT, headers=headers, verify=False)/g' {0}".format(str(safety_dir / 'safety' / 'safety.py')))
-        for egg in safety_dir.glob('*.egg-info'):
-            drop_dir(egg.absolute())
-        for dep in ignore_subdeps:
-            dep_dir = safety_dir / dep
-            if dep_dir.exists():
-                drop_dir(dep_dir)
-        for dep in ignore_files:
-            fn = safety_dir / dep
-            if fn.exists():
-                fn.unlink()
-    zip_name = '{0}/safety'.format(str(vendor_dir))
-    shutil.make_archive(zip_name, format='zip', root_dir=str(safety_dir), base_dir='./')
-    drop_dir(build_dir)
-    download_dir.cleanup()
-
-
-def rename_if_needed(ctx, vendor_dir, item):
-    rename_dict = LIBRARY_RENAMES if vendor_dir.name != 'patched' else PATCHED_RENAMES
-    new_path = None
-    if item.name in rename_dict or item.name in LIBRARY_DIRNAMES:
-        new_name = rename_dict.get(item.name, LIBRARY_DIRNAMES.get(item.name))
-        new_path = item.parent / new_name
-        log('Renaming %s => %s' % (item.name, new_path))
-        # handle existing directories
-        try:
-            item.rename(str(new_path))
-        except OSError:
-            for child in item.iterdir():
-                child.rename(str(new_path / child.name))
 
 
 def write_backport_imports(ctx, vendor_dir):
@@ -324,7 +184,7 @@ def post_install_cleanup(ctx, vendor_dir):
     remove_all(vendor_dir.glob('toml.py'))
 
 
-def vendor(ctx, vendor_dir, package=None, rewrite=True):
+def vendor(ctx, vendor_dir, package=None):
     log('Reinstalling vendored libraries')
     is_patched = vendor_dir.name == 'patched'
     install(ctx, vendor_dir, package=package)
@@ -332,7 +192,6 @@ def vendor(ctx, vendor_dir, package=None, rewrite=True):
     post_install_cleanup(ctx, vendor_dir)
     # Detect the vendored packages/modules
     vendored_libs = detect_vendored_libs(_get_vendor_dir(ctx))
-    patched_libs = detect_vendored_libs(_get_patched_dir(ctx))
     log("Detected vendored libraries: %s" % ", ".join(vendored_libs))
 
     # Apply pre-patches
@@ -350,17 +209,6 @@ def vendor(ctx, vendor_dir, package=None, rewrite=True):
     drop_dir(vendor_dir / 'pkg_resources' / 'extern')
     drop_dir(vendor_dir / 'bin')
 
-    # Global import rewrites
-    log('Renaming specified libs...')
-    for item in vendor_dir.iterdir():
-        if item.is_dir():
-            if rewrite and not package or (package and item.name.lower() in package):
-                log('Rewriting imports for %s...' % item)
-                rewrite_imports(item, vendored_libs, vendor_dir)
-            rename_if_needed(ctx, vendor_dir, item)
-        elif item.name not in FILE_WHITE_LIST:
-            if rewrite and not package or (package and item.stem.lower() in package):
-                rewrite_file_imports(item, vendored_libs, vendor_dir)
     write_backport_imports(ctx, vendor_dir)
     if not package:
         log('Applying post-patches...')
@@ -368,42 +216,6 @@ def vendor(ctx, vendor_dir, package=None, rewrite=True):
         for patch in patches:
             log(patch)
             apply_patch(ctx, patch)
-        # if is_patched:
-        #     piptools_vendor = vendor_dir / 'piptools' / '_vendored'
-        #     if piptools_vendor.exists():
-        #         drop_dir(piptools_vendor)
-        #     msgpack = vendor_dir / 'notpip' / '_vendor' / 'msgpack'
-        #     if msgpack.exists():
-        #         remove_all(msgpack.glob('*.so'))
-
-
-@invoke.task
-def redo_imports(ctx, library):
-    vendor_dir = _get_vendor_dir(ctx)
-    log('Using vendor dir: %s' % vendor_dir)
-    vendored_libs = detect_vendored_libs(vendor_dir)
-    item = vendor_dir / library
-    library_name = vendor_dir / '{0}.py'.format(library)
-    log("Detected vendored libraries: %s" % ", ".join(vendored_libs))
-    log('Rewriting imports for %s...' % item)
-    if item.is_dir():
-        rewrite_imports(item, vendored_libs, vendor_dir)
-    else:
-        rewrite_file_imports(library_name, vendored_libs, vendor_dir)
-
-
-@invoke.task
-def rewrite_all_imports(ctx):
-    vendor_dir = _get_vendor_dir(ctx)
-    log('Using vendor dir: %s' % vendor_dir)
-    vendored_libs = detect_vendored_libs(vendor_dir)
-    log("Detected vendored libraries: %s" % ", ".join(vendored_libs))
-    log("Rewriting all imports related to vendored libs")
-    for item in vendor_dir.iterdir():
-        if item.is_dir():
-            rewrite_imports(item, vendored_libs)
-        elif item.name not in FILE_WHITE_LIST:
-            rewrite_file_imports(item, vendored_libs)
 
 
 @invoke.task
@@ -417,11 +229,6 @@ def packages_missing_licenses(ctx, vendor_dir=None, requirements_file='vendor.tx
         pkg = req.strip().split("=")[0]
         possible_pkgs = [pkg, pkg.replace('-', '_')]
         match_found = False
-        if pkg in PY2_DOWNLOAD:
-            match_found = True
-            # print("pkg ===> %s" % pkg)
-        if pkg in LIBRARY_DIRNAMES:
-            possible_pkgs.append(LIBRARY_DIRNAMES[pkg])
         for pkgpath in possible_pkgs:
             pkgpath = vendor_dir.joinpath(pkgpath)
             if pkgpath.exists() and pkgpath.is_dir():
@@ -554,18 +361,6 @@ def license_destination(vendor_dir, libname, filename):
     lowercase = vendor_dir / libname.lower().replace('-', '_')
     if lowercase.is_dir():
         return lowercase / filename
-    rename_dict = LIBRARY_RENAMES if vendor_dir.name != 'patched' else PATCHED_RENAMES
-    # Short circuit all logic if we are renaming the whole library
-    if libname in rename_dict:
-        return vendor_dir / rename_dict[libname] / filename
-    if libname in LIBRARY_DIRNAMES:
-        override = vendor_dir / LIBRARY_DIRNAMES[libname]
-        if not override.exists() and override.parent.exists():
-            # for flattened subdeps, specifically backports/weakref.py
-            return (
-                vendor_dir / override.parent
-            ) / '{0}.{1}'.format(override.name, filename)
-        return vendor_dir / LIBRARY_DIRNAMES[libname] / filename
     # fallback to libname.LICENSE (used for nondirs)
     return vendor_dir / '{}.{}'.format(libname, filename)
 
@@ -615,17 +410,7 @@ def main(ctx, package=None):
     clean_vendor(ctx, vendor_dir)
     clean_vendor(ctx, patched_dir)
     vendor(ctx, vendor_dir)
-    vendor(ctx, patched_dir, rewrite=True)
+    vendor(ctx, patched_dir)
     download_licenses(ctx, vendor_dir)
     download_licenses(ctx, patched_dir, 'patched.txt')
-    # for pip_dir in [patched_dir]:
-    #     _vendor_dir = pip_dir
-    #     vendor_src_file = vendor_dir / 'vendor_pip.txt'
-    #     vendor_file = _vendor_dir / 'vendor.txt'
-    #     vendor_file.write_bytes(vendor_src_file.read_bytes())
-    #     download_licenses(ctx, _vendor_dir)
-    # from .vendor_passa import vendor_passa
-    # log("Vendoring passa...")
-    # vendor_passa(ctx)
-    # update_safety(ctx)
     log('Revendoring complete')
