@@ -1,5 +1,4 @@
-import configparser
-
+from configparser import ConfigParser
 from pathlib import Path
 
 from . import environment
@@ -10,7 +9,7 @@ if not Path(environment.APP_DIRS.user_config_dir).exists():
 
 CONFIG_FILE = "{0}/mkproj.conf".format(environment.APP_DIRS.user_config_dir)
 
-config = configparser.ConfigParser()
+config: ConfigParser = ConfigParser()
 config.read(CONFIG_FILE)
 
 DEFAULT_VALUES = {

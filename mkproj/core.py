@@ -9,18 +9,18 @@ from .subprocess import call
 
 
 def gather_langs():
-    from .langs import python
+    from .langs import python  # pylint: disable=W0611
 
     for lang in BaseLang.__subclasses__():
         langs[lang().lang] = lang()
 
 
-from .cli.options import State  # isort:skip
+from .cli.options import State  # isort:skip #pylint: disable=C0413
 
 
 def create_project(project_name: str, state: State):
     # If langs have not been gathered yet gather them
-    if not len(langs) > 0:
+    if not langs:
         gather_langs()
 
     project_path = Path("{0}/{1}".format(Path.cwd(), project_name))
