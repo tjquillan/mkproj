@@ -2,5 +2,5 @@ appdirs==1.4.3
 click==7.0
 colorama==0.4.1
 Jinja2==2.10
-shellingham==1.2.7
+shellingham==1.2.8
 halo==0.0.22
