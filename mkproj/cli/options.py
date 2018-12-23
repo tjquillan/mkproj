@@ -1,11 +1,9 @@
 import click.types
-
 from click import BadParameter, make_pass_decorator, option
 
 from .. import config
 from ..core import gather_langs
 from ..environment import langs
-
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -80,7 +78,7 @@ def readme_option(f):
 
 
 def check_lang(ctx, param, value):
-    if not len(langs) > 0:
+    if not langs:
         gather_langs()
 
     if value not in langs:

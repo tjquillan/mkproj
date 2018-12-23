@@ -3,11 +3,17 @@ from pathlib import Path
 
 
 class BaseLang(metaclass=ABCMeta):
-    @property
+
     @abstractmethod
-    def lang(self) -> str:
+    def __init__(self, project_name: str, project_path: Path):
+        pass
+
+
+    @staticmethod
+    @abstractmethod
+    def lang_id() -> str:
         pass
 
     @abstractmethod
-    def create(self, project_name: str, project_path: Path):
+    def create(self):
         pass
