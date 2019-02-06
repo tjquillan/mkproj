@@ -1,10 +1,12 @@
 # Main Deps
 appdirs==1.4.3
 click==7.0
-colorama==0.4.1
 Jinja2==2.10
-shellingham==1.2.8
 halo==0.0.23
+
+# Crayons Deps
+colorama==0.4.1
+shellingham==1.2.8
 
 # Jinja2 Deps
 markupsafe==1.1.0
