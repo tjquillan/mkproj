@@ -13,7 +13,7 @@ sys.path.insert(0, MKPROJ_VENDOR)
 # Inject patched libraries into system path.
 sys.path.insert(0, MKPROJ_PATCHED)
 
-from .cli import cli, mkproj_config  # isort:skip # pylint: disable=C0413
+from .cli import cli, mkproj_config  # isort:skip # noqa: E402,F401
 
 if __name__ == "__main__":
-    cli()  # pylint: disable=E1120
+    cli()

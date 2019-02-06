@@ -9,7 +9,7 @@ from .subprocess import call
 
 
 def gather_langs():
-    from .langs import python  # pylint: disable=W0611
+    from .langs import python  # noqa: F401
 
     for lang in BaseLang.__subclasses__():
         langs[lang.lang_id()] = lang
@@ -20,7 +20,7 @@ def constuct_langs(project_name: str, project_path: Path):
         langs[lang] = langs[lang](project_name, project_path)
 
 
-from .cli.options import State  # isort:skip #pylint: disable=C0413
+from .cli.options import State  # isort:skip # noqa: E402
 
 
 def create_project(project_name: str, state: State):
