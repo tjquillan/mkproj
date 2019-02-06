@@ -3,11 +3,9 @@ from pathlib import Path
 
 
 class BaseLang(metaclass=ABCMeta):
-
     @abstractmethod
     def __init__(self, project_name: str, project_path: Path):
         pass
-
 
     @staticmethod
     @abstractmethod

@@ -24,7 +24,9 @@ from .options import (
 @option("--verbose", "-v", is_flag=True)
 @version_option(prog_name=crayons.normal("mkproj", bold=True), version=__version__)
 @argument("project_name", nargs=1)
-def cli(ctx, state, project_name, lang=False, git=False, verbose=False):  # pylint: disable=W0613,R0913
+def cli(
+    ctx, state, project_name, lang=False, git=False, verbose=False
+):  # pylint: disable=W0613,R0913
     environment.verbosity = verbose
     create_project(project_name, state)
 

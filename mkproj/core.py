@@ -1,4 +1,5 @@
 import sys
+
 from pathlib import Path
 
 from . import printer, templates
@@ -25,7 +26,9 @@ from .cli.options import State  # isort:skip #pylint: disable=C0413
 def create_project(project_name: str, state: State):
     project_path = Path("{0}/{1}".format(Path.cwd(), project_name))
 
-    @printer.report("Creating project '{0}' at '{1}'".format(project_name, project_path.absolute()))
+    @printer.report(
+        "Creating project '{0}' at '{1}'".format(project_name, project_path.absolute())
+    )
     def make_proj_dir():
         project_path.mkdir()
 

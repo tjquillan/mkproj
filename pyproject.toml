@@ -3,3 +3,11 @@ requires = ["setuptools", "wheel"]
 
 [tool.black]
 exclude = 'vendor|patched'
+
+[tool.isort]
+multi_line_output=3
+include_trailing_comma=true
+force_grid_wrap=0
+combine_as_imports=true
+line_length=88
+

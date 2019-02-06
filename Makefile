@@ -1,3 +1,3 @@
 format:
 	black mkproj
-	isort
+	isort -y

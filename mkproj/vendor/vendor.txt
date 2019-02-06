@@ -1,6 +1,17 @@
+# Main Deps
 appdirs==1.4.3
 click==7.0
 colorama==0.4.1
 Jinja2==2.10
 shellingham==1.2.8
-halo==0.0.22
+halo==0.0.23
+
+# Jinja2 Deps
+markupsafe==1.1.0
+
+# Halo Deps
+log_symbols==0.0.12
+spinners==0.0.23
+cursor==1.2.0
+termcolor==1.1.0
+six==1.11.0

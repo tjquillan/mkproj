@@ -19,6 +19,7 @@ TASK_NAME = 'update'
 # from time to time, remove the no longer needed ones
 HARDCODED_LICENSE_URLS = {
     'crayons': 'https://raw.githubusercontent.com/kennethreitz/crayons/master/LICENSE',
+    'cursor': 'https://raw.githubusercontent.com/GijsTimmers/cursor/master/LICENSE',
 }
 
 FILE_WHITE_LIST = (
