@@ -55,7 +55,7 @@ def lang_option(f):
         default=None,
         nargs=1,
         callback=callback,
-        help="Specify which language to create project with. If none is specified a generic template will be generated.",
+        help="Specify which language to create project with. If none is specified a generic template will be generated.", # noqa
         expose_value=False,
     )(f)
 
