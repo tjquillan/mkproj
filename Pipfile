@@ -9,6 +9,8 @@ name = "pypi"
 mkproj = {editable = true,path = "."}
 black = "==18.9b0"
 flake8 = "*"
+flake8-bugbear = "*"
+flake8-builtins = "*"
 flake8-mypy = "*"
 invoke = "*"
 ipython = "*"
