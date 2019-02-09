@@ -1,10 +1,8 @@
 import sys
-
 from pathlib import Path
 
-from . import printer, templates
-from .base_lang import BaseLang
-from .environment import langs
+from . import environment, printer, templates
+from .bases import BaseLang, BaseTask
 from .subprocess import call
 
 
@@ -12,12 +10,17 @@ def gather_langs():
     from .langs import python  # noqa: F401
 
     for lang in BaseLang.__subclasses__():
-        langs[lang.lang_id()] = lang
+        environment.langs[lang.lang_id()] = lang()
 
 
-def constuct_langs(project_name: str, project_path: Path):
-    for lang in langs:
-        langs[lang] = langs[lang](project_name, project_path)
+def gather_tasks():
+    from .tasks import python  # noqa: F401
+
+    for task in BaseTask.__subclasses__():
+        if environment.tasks.get(task.lang_id()):
+            environment.tasks[task.lang_id()][task.task_id()] = task()
+        else:
+            environment.tasks[task.lang_id()] = {task.task_id(): task()}
 
 
 from .cli.options import State  # isort:skip # noqa: E402
@@ -53,10 +56,9 @@ def create_project(project_name: str, state: State):
     # If a language is supplied run creation tasks for the language
     if state.lang is not None:
         # If langs have not been gathered yet gather them
-        if not langs:
+        if not environment.langs:
             gather_langs()
-        constuct_langs(project_name, project_path)
-        langs[state.lang].create()
+        environment.langs[state.lang].create()
 
     # Run generic creation tasks that apply to all projects
     if state.readme:

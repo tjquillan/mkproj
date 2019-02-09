@@ -2,8 +2,8 @@ import os
 
 from pathlib import Path
 
-from .. import config, printer, templates
-from ..base_lang import BaseLang
+from .. import config, environment, printer, templates
+from ..bases import BaseLang
 from ..subprocess import call
 
 
@@ -11,10 +11,10 @@ config.add_section_defaults({"python": {}})
 
 
 class Python(BaseLang):
-    def __init__(self, project_name: str, project_path: Path):
-        self._project_name: str = project_name
-        self._project_path: Path = project_path
-        self._package_dir = Path(self._project_path.joinpath(Path(self._project_name)))
+    def __init__(self):
+        self._package_dir = Path(
+            environment.PROJECT_PATH.joinpath(Path(environment.PROJECT_NAME))
+        )
 
     @staticmethod
     def lang_id() -> str:
@@ -23,7 +23,7 @@ class Python(BaseLang):
     def create(self):
         @printer.report(
             "Creating python package '{0}' in '{1}'".format(
-                self._project_name, str(self._project_path.absolute())
+                environment.PROJECT_NAME, str(environment.PROJECT_PATH.absolute())
             )
         )
         def make_project_dir():
@@ -51,13 +51,13 @@ class Python(BaseLang):
         @printer.report("Creating file 'setup.py'")
         def make_setup_file():
             with open(
-                "{0}/setup.py".format(str(self._project_path.absolute())), "w"
+                "{0}/setup.py".format(str(environment.PROJECT_PATH.absolute())), "w"
             ) as setup_file:
                 templates.write_to_file(
                     setup_file,
                     templates.get(self.lang_id(), "setup.py"),
                     {
-                        "name": self._project_name,
+                        "name": environment.PROJECT_NAME,
                         "license": config.get_config("core", "license"),
                         "author": config.get_config("user", "name"),
                         "author_email": config.get_config("user", "email"),
@@ -66,7 +66,7 @@ class Python(BaseLang):
 
         @printer.report("Initializing project with pipenv")
         def pipenv():
-            os.chdir(self._project_path.absolute())
+            os.chdir(environment.PROJECT_PATH.absolute())
             call(["pipenv", "install"])
 
         make_project_dir()
