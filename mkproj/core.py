@@ -20,15 +20,14 @@ def depends(*deps):
     return wrapper
 
 
-def build_graph(langs: list):
+def build_graph(tasks: dict):
     graph = networkx.DiGraph()
-    nodes = list(n.task_id() for n in BaseTask.__subclasses__() if n.lang_id() in langs)
+    nodes = list(tasks[task].task_id() for task in tasks.keys())
     graph.add_nodes_from(nodes, success=False, error=False)
     edges = list(
-        (n.task_id(), dep)
-        for n in BaseTask.__subclasses__()
-        if n.lang_id() in langs
-        for dep in n.depends()
+        (tasks[task].task_id(), dep)
+        for task in tasks.keys()
+        for dep in tasks[task].depends()
         if not set()
     )
     graph.add_edges_from(edges)
@@ -70,13 +69,18 @@ def create_project(project_name: str, state: State):
         sys.exit(1)
 
     data = LockingDict({"project-name": project_name, "project-path": project_path})
-    tasks = dict((n.task_id(), n(data)) for n in BaseTask.__subclasses__())
 
     langs = ["generic"]
     if state.lang is not None:
         langs.append(state.lang)
 
-    graph = build_graph(langs)
+    tasks = dict(
+        (n.task_id(), n(data))
+        for n in BaseTask.__subclasses__()
+        if n.lang_id() in langs
+    )
+
+    graph = build_graph(tasks)
 
     spinner.start()
     run_nodes(graph, graph.nodes, tasks)
