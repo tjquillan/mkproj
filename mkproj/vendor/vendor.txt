@@ -2,8 +2,9 @@
 appdirs==1.4.3
 click==7.0
 Jinja2==2.10
-yaspin==0.14.1
 log_symbols==0.0.12
+networkx==2.2
+yaspin==0.14.1
 
 # Crayons Deps
 colorama==0.4.1
