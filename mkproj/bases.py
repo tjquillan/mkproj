@@ -3,17 +3,6 @@ from abc import ABCMeta, abstractmethod
 from . import LockingDict, spinner
 
 
-class BaseLang(metaclass=ABCMeta):
-    @staticmethod
-    @abstractmethod
-    def lang_id() -> str:
-        pass
-
-    @abstractmethod
-    def create(self):
-        pass
-
-
 class TaskFailedException(Exception):
     pass
 
