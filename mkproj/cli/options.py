@@ -1,8 +1,5 @@
-import click.types
-
 from click import BadParameter, make_pass_decorator, option
 
-from .. import config
 from ..bases import BaseTask
 
 
@@ -17,25 +14,6 @@ class State(object):
 
 
 pass_state = make_pass_decorator(State, ensure=True)
-
-
-def git_option(f):
-    def callback(ctx, param, value):
-        state = ctx.ensure_object(State)
-
-        if value or config.getboolean_config("core", "git"):
-            state.git = True
-        return value
-
-    return option(
-        "--git",
-        "-g",
-        is_flag=True,
-        expose_value=False,
-        callback=callback,
-        help="Specify whether to init project with git.",
-        type=click.types.BOOL,
-    )(f)
 
 
 def lang_option(f):
@@ -56,25 +34,6 @@ def lang_option(f):
         callback=callback,
         help="Specify which language to create project with. If none is specified a generic template will be generated.",  # noqa
         expose_value=False,
-    )(f)
-
-
-def readme_option(f):
-    def callback(ctx, param, value):
-        state = ctx.ensure_object(State)
-
-        if value or config.getboolean_config("core", "readme"):
-            state.readme = True
-        return value
-
-    return option(
-        "--readme",
-        "-r",
-        is_flag=True,
-        expose_value=False,
-        callback=callback,
-        help="Specify whether to add README to project.",
-        type=click.types.BOOL,
     )(f)
 
 

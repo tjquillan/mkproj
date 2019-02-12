@@ -13,7 +13,7 @@ config: ConfigParser = ConfigParser()
 config.read(CONFIG_FILE)
 
 DEFAULT_VALUES = {
-    "core": {"license": "MIT", "git": "yes", "readme": "yes"},
+    "core": {"license": "MIT"},
     "user": {"name": "John Doe", "email": "john.doe@gmail.com"},
 }
 
