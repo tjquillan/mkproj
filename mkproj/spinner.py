@@ -1,19 +1,16 @@
-import functools
-
 from enum import Enum
 
-from click import echo
+from yaspin import yaspin
+from yaspin.core import Yaspin
 
 import crayons
 
-from halo import Halo
+from log_symbols import LogSymbols
 
 from . import environment
 
 
 INDENT_SIZE = 1
-
-SPINNER = Halo(spinner="dots", placement="right")
 
 
 class PrintLevel(Enum):
@@ -21,6 +18,7 @@ class PrintLevel(Enum):
     WARNING: str = crayons.yellow("=>")
     ERROR: str = crayons.red("=>")
     VERBOSE: str = crayons.magenta("=>")
+    SPECIAL: str = crayons.cyan("=>")
 
 
 def _format_string(level: PrintLevel, string: str, indent: bool = False) -> str:
@@ -30,9 +28,30 @@ def _format_string(level: PrintLevel, string: str, indent: bool = False) -> str:
     return formated_str
 
 
+SPINNER: Yaspin = yaspin(
+    text=_format_string(PrintLevel.SPECIAL, "Setting up project..."), side="right"
+)
+
+
+def start():
+    SPINNER.start()
+
+
+def stop():
+    SPINNER.stop()
+
+
+def ok():
+    SPINNER.ok(LogSymbols.SUCCESS.value)
+
+
+def fail():
+    SPINNER.fail(LogSymbols.ERROR.value)
+
+
 def _print(level: PrintLevel, string: str, indent: bool = False):
     full_string = _format_string(level, string, indent)
-    echo(full_string)
+    SPINNER.write(full_string)
 
 
 def print_info(string: str, indent: bool = False):
@@ -50,20 +69,3 @@ def print_error(string: str, indent: bool = False):
 def print_verbose(string: str, indent: bool = False):
     if environment.verbosity:
         _print(PrintLevel.VERBOSE, string, indent)
-
-
-def report(string: str, indent: bool = False):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            SPINNER.start(_format_string(PrintLevel.INFO, string, indent))
-            try:
-                func_out = func(*args, **kwargs)
-                SPINNER.succeed()
-                return func_out
-            except Exception:
-                SPINNER.fail()
-
-        return wrapper
-
-    return decorator

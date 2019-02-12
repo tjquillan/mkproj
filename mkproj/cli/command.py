@@ -26,6 +26,7 @@ from .options import (
 @argument("project_name", nargs=1)
 def cli(ctx, state, project_name, lang=False, git=False, verbose=False):
     environment.verbosity = verbose
+
     create_project(project_name, state)
 
 

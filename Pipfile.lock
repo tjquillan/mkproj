@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f8671e7eb20616b8921ab2531e9d681031c92a45afc9be6863d28b834385a0be"
+            "sha256": "59c7d01f5ec26f76911a095a9eb0d34b8ab167a6490e4fb14e317826b36e493c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -185,6 +185,13 @@
             ],
             "version": "==0.4.1"
         },
+        "networkx": {
+            "hashes": [
+                "sha256:45e56f7ab6fe81652fb4bc9f44faddb0e9025f469f602df14e3b2551c2ea5c8b"
+            ],
+            "index": "pypi",
+            "version": "==2.2"
+        },
         "parso": {
             "hashes": [
                 "sha256:6ecf7244be8e7283ec9009c72d074830e7e0e611c974f813d76db0390a4e0dd6",
@@ -309,6 +316,14 @@
                 "sha256:f4ebe71925af7b40a864553f761ed559b43544f8f71746c2d756c7fe788ade7c"
             ],
             "version": "==0.1.7"
+        },
+        "yaspin": {
+            "hashes": [
+                "sha256:441f8a6761e347652d04614899fd0a9cfda7439e2d5682e664bd31230c656176",
+                "sha256:d3ebcf8162e0ef8bb5484b8751d5b6d2fbf0720112c81f64614c308576a03b1d"
+            ],
+            "index": "pypi",
+            "version": "==0.14.1"
         }
     }
 }

@@ -3,8 +3,7 @@ import click.types
 from click import BadParameter, make_pass_decorator, option
 
 from .. import config
-from ..core import gather_langs
-from ..environment import langs
+from ..bases import BaseTask
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -55,7 +54,7 @@ def lang_option(f):
         default=None,
         nargs=1,
         callback=callback,
-        help="Specify which language to create project with. If none is specified a generic template will be generated.", # noqa
+        help="Specify which language to create project with. If none is specified a generic template will be generated.",  # noqa
         expose_value=False,
     )(f)
 
@@ -80,8 +79,7 @@ def readme_option(f):
 
 
 def check_lang(ctx, param, value):
-    if not langs:
-        gather_langs()
+    langs = set(task.lang_id() for task in BaseTask.__subclasses__())
 
     if value not in langs:
         raise BadParameter("{0} is not a supported language".format(value))
