@@ -12,7 +12,7 @@ from jinja2 import (
 from . import environment
 
 
-ENV = Environment(
+ENV: Environment = Environment(
     loader=ChoiceLoader(
         [
             FileSystemLoader(
@@ -27,7 +27,7 @@ ENV = Environment(
 
 
 def get(section: str, template: str):
-    template_path = "{0}/{1}.j2".format(section, template)
+    template_path: str = "{0}/{1}.j2".format(section, template)
     return ENV.get_template(template_path)
 
 

@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 from pathlib import Path
+from typing import Dict
 
 from . import environment
 
@@ -7,13 +8,13 @@ from . import environment
 if not Path(environment.APP_DIRS.user_config_dir).exists():
     Path(environment.APP_DIRS.user_config_dir).mkdir()
 
-CONFIG_FILE = "{0}/mkproj.conf".format(environment.APP_DIRS.user_config_dir)
+CONFIG_FILE: str = "{0}/mkproj.conf".format(environment.APP_DIRS.user_config_dir)
 
 config: ConfigParser = ConfigParser()
 config.read(CONFIG_FILE)
 
-DEFAULT_VALUES = {
-    "core": {"license": "MIT", "git": "yes", "readme": "yes"},
+DEFAULT_VALUES: Dict[str, Dict[str, str]] = {
+    "core": {"license": "MIT"},
     "user": {"name": "John Doe", "email": "john.doe@gmail.com"},
 }
 

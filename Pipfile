@@ -16,6 +16,8 @@ invoke = "*"
 ipython = "*"
 isort = "*"
 requests = "*"
+networkx = "==2.2"
+yaspin = "*"
 
 [requires]
 python_version = "3.7"

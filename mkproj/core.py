@@ -1,68 +1,87 @@
 import sys
+
 from pathlib import Path
+from typing import Dict
 
-from . import environment, printer, templates
-from .bases import BaseLang, BaseTask
-from .subprocess import call
+import networkx
 
-
-def gather_langs():
-    from .langs import python  # noqa: F401
-
-    for lang in BaseLang.__subclasses__():
-        environment.langs[lang.lang_id()] = lang()
+from . import LockingDict, spinner
+from .bases import BaseTask, TaskFailedException
 
 
-def gather_tasks():
-    from .tasks import python  # noqa: F401
+def depends(*deps):
+    def depends() -> set:
+        return set(deps)
 
-    for task in BaseTask.__subclasses__():
-        if environment.tasks.get(task.lang_id()):
-            environment.tasks[task.lang_id()][task.task_id()] = task()
-        else:
-            environment.tasks[task.lang_id()] = {task.task_id(): task()}
+    def wrapper(cls):
+        setattr(cls, depends.__name__, staticmethod(depends))
+        return cls
+
+    return wrapper
+
+
+def build_graph(tasks: dict) -> networkx.DiGraph:
+    graph: networkx.DiGraph = networkx.DiGraph()
+    nodes: list = list(tasks[task].task_id() for task in tasks.keys())
+    graph.add_nodes_from(nodes, success=False, error=False)
+    edges: list = list(
+        (tasks[task].task_id(), dep)
+        for task in tasks.keys()
+        for dep in tasks[task].depends()
+        if not set()
+    )
+    graph.add_edges_from(edges)
+
+    return graph
+
+
+def run_nodes(graph: networkx.DiGraph, nodes, tasks: Dict[str, BaseTask]):
+    rerun_nodes: list = []
+
+    for node in nodes:
+        if not graph.nodes[node]["error"] and not len(list(graph.successors(node))) > 0:
+            try:
+                tasks[node].run()
+                graph.nodes[node]["success"] = True
+                edges: list = list((dep, node) for dep in graph.predecessors(node))
+                graph.remove_edges_from(edges)
+            except TaskFailedException:
+                graph.nodes[node]["error"] = True
+                for dep in graph.predecessors(node):
+                    graph.nodes[dep]["error"] = True
+        elif not graph.nodes[node]["error"]:
+            rerun_nodes.append(node)
+
+    if rerun_nodes:
+        run_nodes(graph, rerun_nodes, tasks)
 
 
 from .cli.options import State  # isort:skip # noqa: E402
 
 
 def create_project(project_name: str, state: State):
-    project_path = Path("{0}/{1}".format(Path.cwd(), project_name))
-
-    @printer.report(
-        "Creating project '{0}' at '{1}'".format(project_name, project_path.absolute())
-    )
-    def make_proj_dir():
-        project_path.mkdir()
-
-    @printer.report("Creating file 'README.md'")
-    def make_readme():
-        with open("{0}/README.md".format(str(project_path.absolute())), "w") as file:
-            templates.write_to_file(
-                file, templates.get("base", "README.md"), {"name": project_name}
-            )
-
-    @printer.report("Initializing project as git repository")
-    def init_git():
-        call(["git", "-C", project_path.absolute(), "init"])
+    project_path: Path = Path("{0}/{1}".format(Path.cwd(), project_name))
 
     if project_path.exists():
-        printer.print_error("Project already exists. Aborting...")
+        spinner.print_error("Project already exists. Aborting...")
         sys.exit(1)
 
-    # Allways make a project dir
-    make_proj_dir()
+    data: LockingDict = LockingDict(
+        {"project-name": project_name, "project-path": project_path}
+    )
 
-    # If a language is supplied run creation tasks for the language
+    langs: list = ["generic"]
     if state.lang is not None:
-        # If langs have not been gathered yet gather them
-        if not environment.langs:
-            gather_langs()
-        environment.langs[state.lang].create()
+        langs.append(state.lang)
 
-    # Run generic creation tasks that apply to all projects
-    if state.readme:
-        make_readme()
+    tasks: dict = dict(
+        (n.task_id(), n(data))
+        for n in BaseTask.__subclasses__()
+        if n.lang_id() in langs
+    )
 
-    if state.git:
-        init_git()
+    graph: networkx.DiGraph = build_graph(tasks)
+
+    spinner.start()
+    run_nodes(graph, graph.nodes, tasks)
+    spinner.ok()

@@ -1,23 +1,16 @@
 from abc import ABCMeta, abstractmethod
-from pathlib import Path
+
+from . import LockingDict, spinner
 
 
-class BaseLang(metaclass=ABCMeta):
-    @abstractmethod
-    def __init__(self, project_name: str, project_path: Path):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def lang_id() -> str:
-        pass
-
-    @abstractmethod
-    def create(self):
-        pass
+class TaskFailedException(Exception):
+    pass
 
 
 class BaseTask(metaclass=ABCMeta):
+    def __init__(self, data: LockingDict):
+        self._data: LockingDict = data
+
     @staticmethod
     @abstractmethod
     def lang_id() -> str:
@@ -28,9 +21,19 @@ class BaseTask(metaclass=ABCMeta):
     def task_id() -> str:
         pass
 
+    # @staticmethod
+    # @abstractmethod
+    # def depends() -> set:
+    #     pass
+
     @abstractmethod
-    def _run(self):
+    def _run(self) -> str:
         pass
 
     def run(self):
-        self._run()
+        try:
+            msg: str = self._run()
+            spinner.print_info(msg)
+        except Exception:
+            spinner.print_error("Task with id: '{}' has failed".format(self.task_id()))
+            raise TaskFailedException

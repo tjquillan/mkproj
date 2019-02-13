@@ -19,8 +19,8 @@ sys.path.insert(0, MKPROJ_PATCHED)
 
 class LockingDict(MutableMapping):
     def __init__(self, *args, **kw):
-        self._dict = dict(*args, **kw)
-        self._lock = Lock()
+        self._dict: dict = dict(*args, **kw)
+        self._lock: Lock = Lock()
 
     def __setitem__(self, key, value):
         with self._lock:
@@ -48,6 +48,7 @@ class LockingDict(MutableMapping):
 
 
 from .cli import cli, mkproj_config  # isort:skip # noqa: E402,F401
+from .tasks import *  # isort:skip # noqa: E402,F401,F403
 
 if __name__ == "__main__":
     cli()
