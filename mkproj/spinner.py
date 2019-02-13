@@ -22,9 +22,9 @@ class PrintLevel(Enum):
 
 
 def _format_string(level: PrintLevel, string: str, indent: bool = False) -> str:
-    formated_str = "{0} {1}".format(level, string)
+    formated_str: str = "{0} {1}".format(level, string)
     if indent:
-        formated_str = "{0}{1}".format(("\t" * INDENT_SIZE), formated_str)
+        formated_str: str = "{0}{1}".format(("\t" * INDENT_SIZE), formated_str)
     return formated_str
 
 
@@ -50,8 +50,7 @@ def fail():
 
 
 def _print(level: PrintLevel, string: str, indent: bool = False):
-    full_string = _format_string(level, string, indent)
-    SPINNER.write(full_string)
+    SPINNER.write(_format_string(level, string, indent))
 
 
 def print_info(string: str, indent: bool = False):

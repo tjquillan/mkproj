@@ -9,7 +9,7 @@ class TaskFailedException(Exception):
 
 class BaseTask(metaclass=ABCMeta):
     def __init__(self, data: LockingDict):
-        self._data = data
+        self._data: LockingDict = data
 
     @staticmethod
     @abstractmethod
@@ -32,7 +32,7 @@ class BaseTask(metaclass=ABCMeta):
 
     def run(self):
         try:
-            msg = self._run()
+            msg: str = self._run()
             spinner.print_info(msg)
         except Exception:
             spinner.print_error("Task with id: '{}' has failed".format(self.task_id()))

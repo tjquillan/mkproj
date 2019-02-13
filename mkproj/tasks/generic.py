@@ -14,7 +14,7 @@ class MakeProjectDir(BaseTask):
     def task_id() -> str:
         return "make-project-dir"
 
-    def _run(self):
+    def _run(self) -> str:
         self._data["project-path"].mkdir()
         return "Created project directory at: {}".format(
             self._data["project-path"].absolute()
@@ -31,7 +31,7 @@ class MakeReadme(BaseTask):
     def task_id() -> str:
         return "make-readme"
 
-    def _run(self):
+    def _run(self) -> str:
         with open(
             "{0}/README.md".format(str(self._data["project-path"].absolute())), "w"
         ) as file:
@@ -53,6 +53,6 @@ class GitInit(BaseTask):
     def task_id() -> str:
         return "git-init"
 
-    def _run(self):
+    def _run(self) -> str:
         call(["git", "-C", self._data["project-path"].absolute(), "init"])
         return "Project initialized with git"

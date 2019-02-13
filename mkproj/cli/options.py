@@ -3,7 +3,7 @@ from click import BadParameter, make_pass_decorator, option
 from ..bases import BaseTask
 
 
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+CONTEXT_SETTINGS: dict = dict(help_option_names=["-h", "--help"])
 
 
 class State(object):
@@ -38,7 +38,7 @@ def lang_option(f):
 
 
 def check_lang(ctx, param, value):
-    langs = set(task.lang_id() for task in BaseTask.__subclasses__())
+    langs: set = set(task.lang_id() for task in BaseTask.__subclasses__())
 
     if value not in langs:
         raise BadParameter("{0} is not a supported language".format(value))

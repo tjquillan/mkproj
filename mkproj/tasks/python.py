@@ -18,7 +18,7 @@ class MakePackage(BaseTask):
     def task_id() -> str:
         return "make-package-dir"
 
-    def _run(self):
+    def _run(self) -> str:
         package_dir = Path(
             self._data["project-path"].joinpath(Path(self._data["project-name"]))
         )
@@ -37,7 +37,7 @@ class MakeInitFile(BaseTask):
     def task_id() -> str:
         return "make-init-file"
 
-    def _run(self):
+    def _run(self) -> str:
         open(
             "{0}/__init__.py".format(str(self._data["source-path"].absolute())), "a"
         ).close()
@@ -56,7 +56,7 @@ class MakeMainFile(BaseTask):
     def task_id() -> str:
         return "make-main-file"
 
-    def _run(self):
+    def _run(self) -> str:
         open(
             "{0}/__main__.py".format(str(self._data["source-path"].absolute())), "a"
         ).close()
@@ -75,7 +75,7 @@ class MakeSetupFile(BaseTask):
     def task_id() -> str:
         return "make-setup-file"
 
-    def _run(self):
+    def _run(self) -> str:
         with open(
             "{0}/setup.py".format(str(self._data["project-path"].absolute())), "w"
         ) as setup_file:
@@ -104,7 +104,7 @@ class PipenvInit(BaseTask):
     def task_id() -> str:
         return "pipenv-init"
 
-    def _run(self):
+    def _run(self) -> str:
         os.chdir(self._data["project-path"].absolute())
         call(["pipenv", "install"])
 

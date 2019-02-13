@@ -19,8 +19,8 @@ sys.path.insert(0, MKPROJ_PATCHED)
 
 class LockingDict(MutableMapping):
     def __init__(self, *args, **kw):
-        self._dict = dict(*args, **kw)
-        self._lock = Lock()
+        self._dict: dict = dict(*args, **kw)
+        self._lock: Lock = Lock()
 
     def __setitem__(self, key, value):
         with self._lock:
