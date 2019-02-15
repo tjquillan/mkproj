@@ -1,11 +1,10 @@
 import sys
-
 from pathlib import Path
 from typing import Dict
 
 import networkx
 
-from . import LockingDict, spinner
+from . import LockingDict, config, spinner
 from .bases import BaseTask, TaskFailedException
 
 
@@ -78,6 +77,7 @@ def create_project(project_name: str, state: State):
         (n.task_id(), n(data))
         for n in BaseTask.__subclasses__()
         if n.lang_id() in langs
+        and n.task_id() not in config.get_config("tasks", "skip")
     )
 
     graph: networkx.DiGraph = build_graph(tasks)
