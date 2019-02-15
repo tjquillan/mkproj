@@ -145,4 +145,4 @@ pip-wheel-metadata
 .vscode
 
 # Vendoring Leftovers
-mkproj/vendoring/share
+mkproj/vendor/share/
