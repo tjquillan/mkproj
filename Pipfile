@@ -4,7 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+networkx = "*"
 pyyaml = "*"
+yaspin = "*"
 
 [dev-packages]
 mkproj = {editable = true,path = "."}
@@ -17,8 +19,6 @@ invoke = "*"
 ipython = "*"
 isort = "*"
 requests = "*"
-networkx = "==2.2"
-yaspin = "*"
 
 [requires]
 python_version = "3.7"
