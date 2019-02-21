@@ -5,6 +5,7 @@ import yaml
 
 from . import environment
 
+
 if not Path(environment.APP_DIRS.user_config_dir).exists():
     Path(environment.APP_DIRS.user_config_dir).mkdir()
 
@@ -13,7 +14,7 @@ CONFIG_FILE: str = "{0}/mkproj.yml".format(environment.APP_DIRS.user_config_dir)
 DEFAULT_VALUES: Dict[str, dict] = {
     "core": {"license": "MIT"},
     "user": {"name": "John Doe", "email": "john.doe@gmail.com"},
-    "tasks": {"skip": ""}
+    "tasks": {"skip": ""},
 }
 
 
