@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
+from typing import Dict
 
-from . import LockingDict, spinner
+from . import LockingDict, config, spinner
 
 
 class TaskFailedException(Exception):
@@ -21,16 +22,23 @@ class BaseTask(metaclass=ABCMeta):
     def task_id() -> str:
         pass
 
-    # @staticmethod
-    # @abstractmethod
-    # def depends() -> set:
-    #     pass
+    # This does not use the actual abstractmethod decorator as it can also
+    # be added by the depends decorator.
+    @staticmethod
+    def depends() -> set:
+        raise NotImplementedError("BaseTask must implement method 'depends'")
+
+    @staticmethod
+    def config_defaults() -> Dict[str, dict]:
+        return {}
 
     @abstractmethod
     def _run(self) -> str:
         pass
 
     def run(self):
+        config.add_section_defaults(self.config_defaults())
+
         try:
             msg: str = self._run()
             spinner.print_info(msg)
