@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
+from typing import Dict
 
-from . import LockingDict, spinner
+from . import LockingDict, config, spinner
 
 
 class TaskFailedException(Exception):
@@ -26,11 +27,17 @@ class BaseTask(metaclass=ABCMeta):
     # def depends() -> set:
     #     pass
 
+    @staticmethod
+    def config_defaults() -> Dict[str, dict]:
+        return {}
+
     @abstractmethod
     def _run(self) -> str:
         pass
 
     def run(self):
+        config.add_section_defaults(self.config_defaults())
+
         try:
             msg: str = self._run()
             spinner.print_info(msg)
