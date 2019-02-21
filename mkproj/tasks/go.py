@@ -1,6 +1,8 @@
 import os
 
-from .. import LockingDict, config
+from typing import Dict
+
+from .. import config
 from ..bases import BaseTask
 from ..core import depends
 from ..subprocess import call
@@ -8,15 +10,6 @@ from ..subprocess import call
 
 @depends("make-project-dir")
 class ModuleInit(BaseTask):
-    def __init__(self, data: LockingDict):
-        super().__init__(data)
-        config.add_section_defaults({
-            "go": {
-                "url": "github.com",
-                "username": config.get_config("user", "name")
-            }
-        })
-
     @staticmethod
     def lang_id() -> str:
         return "go"
@@ -24,6 +17,15 @@ class ModuleInit(BaseTask):
     @staticmethod
     def task_id() -> str:
         return "init-module"
+
+    @staticmethod
+    def config_defaults() -> Dict[str, dict]:
+        return {
+            "go": {
+                "url": "github.com",
+                "username": config.get_config("user", "name")
+            }
+        }
 
     def _run(self) -> str:
         module_name: str = "{}/{}/{}".format(
