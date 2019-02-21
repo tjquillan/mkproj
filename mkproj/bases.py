@@ -22,10 +22,11 @@ class BaseTask(metaclass=ABCMeta):
     def task_id() -> str:
         pass
 
-    # @staticmethod
-    # @abstractmethod
-    # def depends() -> set:
-    #     pass
+    # This does not use the actual abstractmethod decorator as it can also
+    # be added by the depends decorator.
+    @staticmethod
+    def depends() -> set:
+        raise NotImplementedError("BaseTask must implement method 'depends'")
 
     @staticmethod
     def config_defaults() -> Dict[str, dict]:
