@@ -20,40 +20,61 @@ def depends(*deps):
     return wrapper
 
 
-def build_graph(tasks: dict) -> networkx.DiGraph:
-    graph: networkx.DiGraph = networkx.DiGraph()
-    nodes: list = list(tasks[task].task_id() for task in tasks.keys())
-    graph.add_nodes_from(nodes, success=False, error=False)
-    edges: list = list(
-        (tasks[task].task_id(), dep)
-        for task in tasks.keys()
-        for dep in tasks[task].depends()
-        if not set()
-    )
-    graph.add_edges_from(edges)
+class TaskGraph:
+    def __init__(self, tasks: Dict[str, BaseTask]):
+        self._graph: networkx.DiGraph = networkx.DiGraph()
 
-    return graph
+        self._tasks = tasks
 
+        self._build_graph()
 
-def run_nodes(graph: networkx.DiGraph, nodes, tasks: Dict[str, BaseTask]):
-    rerun_nodes: list = []
+    @property
+    def tasks(self) -> Dict[str, BaseTask]:
+        return self._tasks
 
-    for node in nodes:
-        if not graph.nodes[node]["error"] and not len(list(graph.successors(node))) > 0:
-            try:
-                tasks[node].run()
-                graph.nodes[node]["success"] = True
-                edges: list = list((dep, node) for dep in graph.predecessors(node))
-                graph.remove_edges_from(edges)
-            except TaskFailedException:
-                graph.nodes[node]["error"] = True
-                for dep in graph.predecessors(node):
-                    graph.nodes[dep]["error"] = True
-        elif not graph.nodes[node]["error"]:
-            rerun_nodes.append(node)
+    @tasks.setter
+    def tasks(self, tasks: Dict[str, BaseTask]):
+        self._tasks = tasks
+        self._build_graph()
 
-    if rerun_nodes:
-        run_nodes(graph, rerun_nodes, tasks)
+    def _build_graph(self):
+        nodes: list = list(self._tasks[task].task_id() for task in self._tasks.keys())
+        self._graph.add_nodes_from(nodes, success=False, error=False)
+        edges: list = list(
+            (self._tasks[task].task_id(), dep)
+            for task in self._tasks.keys()
+            for dep in self._tasks[task].depends()
+            if not set()
+        )
+        self._graph.add_edges_from(edges)
+
+    def _run_nodes(self, nodes: networkx.classes.reportviews.NodeView):
+        rerun_nodes: list = []
+
+        for node in nodes:
+            if (
+                not self._graph.nodes[node]["error"]
+                and not len(list(self._graph.successors(node))) > 0
+            ):
+                try:
+                    self._tasks[node].run()
+                    self._graph.nodes[node]["success"] = True
+                    edges: list = list(
+                        (dep, node) for dep in self._graph.predecessors(node)
+                    )
+                    self._graph.remove_edges_from(edges)
+                except TaskFailedException:
+                    self._graph.nodes[node]["error"] = True
+                    for dep in self._graph.predecessors(node):
+                        self._graph.nodes[dep]["error"] = True
+            elif not self._graph.nodes[node]["error"]:
+                rerun_nodes.append(node)
+
+        if rerun_nodes:
+            self._run_nodes(rerun_nodes)
+
+    def run_nodes(self):
+        self._run_nodes(self._graph.nodes)
 
 
 from .cli.options import State  # isort:skip # noqa: E402
@@ -81,8 +102,8 @@ def create_project(project_name: str, state: State):
         and n.task_id() not in config.get_config("tasks", "skip")
     )
 
-    graph: networkx.DiGraph = build_graph(tasks)
+    graph: TaskGraph = TaskGraph(tasks)
 
     spinner.start()
-    run_nodes(graph, graph.nodes, tasks)
+    graph.run_nodes()
     spinner.ok()
