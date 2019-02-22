@@ -38,12 +38,12 @@ class TaskIndex:
         return self._tasks.__repr__()
 
     def _index(self):
-        self._tasks = dict(
-            (n.task_id(), n(self._data))
+        self._tasks = {
+            n.task_id(): n(self._data)
             for n in BaseTask.__subclasses__()
             if n.lang_id() in self._langs
             and n.task_id() not in config.get_config("tasks", "skip")
-        )
+        }
 
     def _task(self, task: str) -> BaseTask:
         return self._tasks[task]
@@ -88,12 +88,12 @@ class TaskGraph:
         nodes: list = self._tasks.task_ids()
         self._graph.add_nodes_from(nodes, success=False, error=False)
 
-        edges: list = list(
+        edges: list = [
             (task, dep)
             for task in nodes
             for dep in self._tasks.depends(task)
             if not set()
-        )
+        ]
         self._graph.add_edges_from(edges)
 
     def _run_nodes(self, nodes: networkx.classes.reportviews.NodeView):
@@ -107,9 +107,9 @@ class TaskGraph:
                 try:
                     self._tasks.run(node)
                     self._graph.nodes[node]["success"] = True
-                    edges: list = list(
+                    edges: list = [
                         (dep, node) for dep in self._graph.predecessors(node)
-                    )
+                    ]
                     self._graph.remove_edges_from(edges)
                 except TaskFailedException:
                     self._graph.nodes[node]["error"] = True
