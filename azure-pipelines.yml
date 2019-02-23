@@ -8,7 +8,7 @@ trigger:
 
 jobs:
 
-- job: 'Run Linter'
+- job: 'Lint'
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -33,7 +33,7 @@ jobs:
     displayName: 'flake8'
 
 - job: 'Publish'
-  dependsOn: 'Test'
+  dependsOn: 'Lint'
   pool:
     vmImage: 'Ubuntu-16.04'
 
