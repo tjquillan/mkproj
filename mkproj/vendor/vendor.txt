@@ -12,4 +12,4 @@ colorama==0.4.1
 shellingham==1.2.8
 
 # Jinja2 Deps
-markupsafe==1.1.0
+markupsafe==1.1.1
