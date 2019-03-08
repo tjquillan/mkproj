@@ -4,7 +4,6 @@ from ..core import depends
 from ..subprocess import call
 
 
-@depends()
 class MakeProjectDir(BaseTask):
     @staticmethod
     def lang_id() -> str:

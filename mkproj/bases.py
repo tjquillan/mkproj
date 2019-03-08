@@ -26,7 +26,7 @@ class BaseTask(metaclass=ABCMeta):
     # be added by the depends decorator.
     @staticmethod
     def depends() -> set:
-        raise NotImplementedError("BaseTask must implement method 'depends'")
+        return set()
 
     @staticmethod
     def config_defaults() -> Dict[str, dict]:
