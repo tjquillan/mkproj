@@ -9,12 +9,23 @@ from . import LockingDict, config, spinner
 from .bases import BaseTask, TaskFailedException
 
 
-def depends(*deps):
+def depends(*tasks):
     def depends() -> set:
-        return set(deps)
+        return set(tasks)
 
     def wrapper(cls):
         setattr(cls, depends.__name__, staticmethod(depends))
+        return cls
+
+    return wrapper
+
+
+def overrides(*tasks):
+    def overrides() -> set:
+        return set(tasks)
+
+    def wrapper(cls):
+        setattr(cls, overrides.__name__, staticmethod(overrides))
         return cls
 
     return wrapper
@@ -28,6 +39,7 @@ class TaskIndex:
             {"project-name": project_name, "project-path": project_path}
         )
         self._tasks: Dict[str, BaseTask] = {}
+        self._override_tasks: Dict[str, list] = {}
 
         self._index()
 
@@ -45,20 +57,41 @@ class TaskIndex:
             and n.task_id() not in config.get_config("tasks", "skip")
         }
 
+        for task in self._tasks:
+            for override_task in self._tasks[task].overrides():
+                try:
+                    self._override_tasks[override_task].append(
+                        self._tasks[task].task_id()
+                    )
+                    spinner.print_error(
+                        "Tasks: {} both attempt to override task: '{}'".format(
+                            self._override_tasks[override_task], override_task
+                        )
+                    )
+                    sys.exit(1)
+                except KeyError:
+                    self._override_tasks[override_task] = [self._tasks[task].task_id()]
+
     def _task(self, task: str) -> BaseTask:
         return self._tasks[task]
 
     def lang_id(self, task: str) -> str:
         return self._task(task).lang_id()
 
-    def task_ids(self) -> list:
-        return list(self._tasks.keys())
-
     def task_id(self, task: str) -> str:
         return self._task(task).task_id()
 
+    def task_ids(self) -> list:
+        return list(self._tasks.keys())
+
     def depends(self, task: str) -> set:
         return self._task(task).depends()
+
+    def overrides(self, task: str) -> list:
+        try:
+            return self._override_tasks[task]
+        except KeyError:
+            return []
 
     def config_defaults(self, task: str) -> Dict[str, dict]:
         return self._task(task).config_defaults()
@@ -85,15 +118,28 @@ class TaskGraph:
         self._build_graph()
 
     def _build_graph(self):
+        # Assemble the initial nodes and edges
         nodes: list = self._tasks.task_ids()
-        self._graph.add_nodes_from(nodes, success=False, error=False)
-
         edges: list = [
             (task, dep)
             for task in nodes
             for dep in self._tasks.depends(task)
             if not set()
         ]
+
+        # Process overrides
+        for node in nodes:
+            overrider = self._tasks.overrides(node)
+            if overrider:
+                nodes.remove(node)
+                for edge in edges:
+                    if edge[0] == node:
+                        edges.remove(edge)
+
+                    if edge[1] == node:
+                        edges[edges.index(edge)] = (edge[0], overrider[0])
+
+        self._graph.add_nodes_from(nodes, success=False, error=False)
         self._graph.add_edges_from(edges)
 
     def _run_nodes(self, nodes: networkx.classes.reportviews.NodeView):

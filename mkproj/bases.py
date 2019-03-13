@@ -22,10 +22,12 @@ class BaseTask(metaclass=ABCMeta):
     def task_id() -> str:
         pass
 
-    # This does not use the actual abstractmethod decorator as it can also
-    # be added by the depends decorator.
     @staticmethod
     def depends() -> set:
+        return set()
+
+    @staticmethod
+    def overrides() -> set:
         return set()
 
     @staticmethod
