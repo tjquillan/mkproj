@@ -24,7 +24,7 @@ def add_section_defaults(section: dict):
 
 try:
     with open(CONFIG_FILE, "r") as cfg:
-        config_data = yaml.load(cfg)
+        config_data = yaml.load(cfg, Loader=yaml.FullLoader)
 except FileNotFoundError:
     config_data = {}
 
