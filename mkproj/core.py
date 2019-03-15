@@ -6,7 +6,9 @@ from typing import Any, Dict, List, Tuple
 
 import networkx
 
-from . import LockingDict, config, spinner
+from pluginbase import PluginBase, PluginSource
+
+from . import LockingDict, config, environment, spinner
 from .bases import BaseTask, TaskFailedException
 
 
@@ -70,18 +72,18 @@ class TaskIndex(MutableMapping):
         # fmt: on
 
         for task in self._tasks:
-            override_tasks: list = []
+            override_tasks: Dict[str, List[str]] = {}
             for override_task in self._tasks[task]["class"].overrides():
                 try:
-                    override_tasks[override_task].append(self._tasks[task].task_id())
+                    override_tasks[override_task].append(self._tasks[task]["class"].task_id())
                     spinner.print_error(
                         "Tasks: {} both attempt to override task: '{}'".format(
-                            self._override_tasks[override_task], override_task
+                            override_tasks[override_task], override_task
                         )
                     )
                     sys.exit(1)
                 except KeyError:
-                    override_tasks[override_task] = [self._tasks[task].task_id()]
+                    override_tasks[override_task] = [self._tasks[task]["class"].task_id()]
                     self._override(override_task, task)
 
     def _override(self, overridden: str, overrider: str):
@@ -142,23 +144,24 @@ class TaskGraph:
         rerun_nodes: list = []
 
         for node in nodes:
-            if (
-                not self._graph.nodes[node]["error"]
-                and not len(list(self._graph.successors(node))) > 0
-            ):
-                try:
-                    self._tasks[node]["class"].run()
-                    self._graph.nodes[node]["success"] = True
-                    edges: list = [
-                        (dep, node) for dep in self._graph.predecessors(node)
-                    ]
-                    self._graph.remove_edges_from(edges)
-                except TaskFailedException:
-                    self._graph.nodes[node]["error"] = True
-                    for dep in self._graph.predecessors(node):
-                        self._graph.nodes[dep]["error"] = True
-            elif not self._graph.nodes[node]["error"]:
-                rerun_nodes.append(node)
+            if not self._tasks[node]["overridden"]:
+                if (
+                    not self._graph.nodes[node]["error"]
+                    and not len(list(self._graph.successors(node))) > 0
+                ):
+                    try:
+                        self._tasks[node]["class"].run()
+                        self._graph.nodes[node]["success"] = True
+                        edges: list = [
+                            (dep, node) for dep in self._graph.predecessors(node)
+                        ]
+                        self._graph.remove_edges_from(edges)
+                    except TaskFailedException:
+                        self._graph.nodes[node]["error"] = True
+                        for dep in self._graph.predecessors(node):
+                            self._graph.nodes[dep]["error"] = True
+                elif not self._graph.nodes[node]["error"]:
+                    rerun_nodes.append(node)
 
         if rerun_nodes:
             self._run_nodes(rerun_nodes)
@@ -182,6 +185,14 @@ def create_project(project_name: str, state: State):
         langs.append(state.lang)
 
     mixins: list = list(config.get_config(state.lang, "mixins")) + state.mixins
+
+    # Load external tasks
+    plugin_base: PluginBase = PluginBase(package="mkproj.plugins")
+    plugin_source: PluginSource = plugin_base.make_plugin_source(
+        searchpath=["{}/tasks".format(environment.APP_DIRS.user_data_dir)]
+    )
+    for plugin in plugin_source.list_plugins():
+        plugin_source.load_plugin(plugin)
 
     tasks: TaskIndex = TaskIndex(project_name, project_path, langs, mixins)
     graph: TaskGraph = TaskGraph(tasks)

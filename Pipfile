@@ -7,6 +7,7 @@ name = "pypi"
 networkx = "*"
 pyyaml = "*"
 yaspin = "*"
+pluginbase = "*"
 
 [dev-packages]
 mkproj = {editable = true,path = "."}

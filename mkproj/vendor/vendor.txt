@@ -4,6 +4,7 @@ click==7.0
 Jinja2==2.10
 log_symbols==0.0.12
 networkx==2.2
+pluginbase==1.0.0
 pyyaml==5.1
 yaspin==0.14.1
 
