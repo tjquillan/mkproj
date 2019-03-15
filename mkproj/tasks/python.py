@@ -1,5 +1,4 @@
 import os
-
 from pathlib import Path
 
 from .. import config, templates
@@ -11,12 +10,12 @@ from ..subprocess import call
 @depends("make-project-dir")
 class MakePackage(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "python"
-
-    @staticmethod
     def task_id() -> str:
         return "make-package-dir"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "python"
 
     def _run(self) -> str:
         package_dir = Path(
@@ -30,12 +29,12 @@ class MakePackage(BaseTask):
 @depends("make-project-dir", "make-package-dir")
 class MakeInitFile(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "python"
-
-    @staticmethod
     def task_id() -> str:
         return "make-init-file"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "python"
 
     def _run(self) -> str:
         open(
@@ -49,12 +48,12 @@ class MakeInitFile(BaseTask):
 @depends("make-project-dir", "make-package-dir")
 class MakeMainFile(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "python"
-
-    @staticmethod
     def task_id() -> str:
         return "make-main-file"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "python"
 
     def _run(self) -> str:
         open(
@@ -68,12 +67,12 @@ class MakeMainFile(BaseTask):
 @depends("make-project-dir")
 class MakeSetupFile(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "python"
-
-    @staticmethod
     def task_id() -> str:
         return "make-setup-file"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "python"
 
     def _run(self) -> str:
         with open(
@@ -97,12 +96,12 @@ class MakeSetupFile(BaseTask):
 @depends("make-project-dir")
 class PipenvInit(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "python"
-
-    @staticmethod
     def task_id() -> str:
         return "pipenv-init"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "python"
 
     @staticmethod
     def mixin_id() -> str:

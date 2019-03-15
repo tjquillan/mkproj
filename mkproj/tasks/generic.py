@@ -6,12 +6,12 @@ from ..subprocess import call
 
 class MakeProjectDir(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "generic"
-
-    @staticmethod
     def task_id() -> str:
         return "make-project-dir"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "generic"
 
     def _run(self) -> str:
         self._data["project-path"].mkdir()
@@ -23,12 +23,12 @@ class MakeProjectDir(BaseTask):
 @depends("make-project-dir")
 class MakeReadme(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "generic"
-
-    @staticmethod
     def task_id() -> str:
         return "make-readme"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "generic"
 
     def _run(self) -> str:
         with open(
@@ -45,12 +45,12 @@ class MakeReadme(BaseTask):
 @depends("make-project-dir")
 class GitInit(BaseTask):
     @staticmethod
-    def lang_id() -> str:
-        return "generic"
-
-    @staticmethod
     def task_id() -> str:
         return "git-init"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "generic"
 
     def _run(self) -> str:
         call(["git", "-C", self._data["project-path"].absolute(), "init"])
