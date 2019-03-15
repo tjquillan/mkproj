@@ -104,6 +104,10 @@ class PipenvInit(BaseTask):
     def task_id() -> str:
         return "pipenv-init"
 
+    @staticmethod
+    def mixin_id() -> str:
+        return "pipenv"
+
     def _run(self) -> str:
         os.chdir(self._data["project-path"].absolute())
         call(["pipenv", "install"])

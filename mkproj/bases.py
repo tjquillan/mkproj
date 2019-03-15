@@ -14,13 +14,17 @@ class BaseTask(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def lang_id() -> str:
+    def task_id() -> str:
         pass
 
     @staticmethod
     @abstractmethod
-    def task_id() -> str:
+    def lang_id() -> str:
         pass
+
+    @staticmethod
+    def mixin_id() -> str:
+        return None
 
     @staticmethod
     def depends() -> set:

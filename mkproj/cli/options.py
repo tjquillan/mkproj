@@ -8,9 +8,8 @@ CONTEXT_SETTINGS: dict = {"help_option_names": ["-h", "--help"]}
 
 class State(object):
     def __init__(self):
-        self.git = False
         self.lang = None
-        self.readme = False
+        self.mixins = []
 
 
 pass_state = make_pass_decorator(State, ensure=True)
@@ -33,6 +32,29 @@ def lang_option(f):
         nargs=1,
         callback=callback,
         help="Specify which language to create project with. If none is specified a generic template will be generated.",  # noqa
+        expose_value=False,
+    )(f)
+
+
+def mixins_option(f):
+    def callback(ctx, param, value):
+        state = ctx.ensure_object(State)
+
+        if value is not None:
+            # Regardless of input mixin names should be handled as all lower case
+            value = value.lower()
+            value.strip(" ")
+            value = value.split(",")
+            state.mixins = value
+        return value
+
+    return option(
+        "--mixins",
+        "-m",
+        default=None,
+        nargs=1,
+        callback=callback,
+        help="Specify which mixins to create project with. Mixins should be seperated with a comma",  # noqa
         expose_value=False,
     )(f)
 

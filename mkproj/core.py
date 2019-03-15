@@ -1,7 +1,8 @@
 import sys
 
+from collections.abc import MutableMapping
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict, List, Tuple
 
 import networkx
 
@@ -31,38 +32,48 @@ def overrides(*tasks):
     return wrapper
 
 
-class TaskIndex:
-    def __init__(self, project_name: str, project_path: Path, langs: list):
-        self._langs: list = langs
+class TaskIndex(MutableMapping):
+    def __init__(
+        self,
+        project_name: str,
+        project_path: Path,
+        langs: List[str],
+        mixins: List[str],
+        *args,
+        **kwargs,
+    ):
+        self._langs: List[str] = langs
+        self._mixins: List[str] = mixins
 
         self._data: LockingDict = LockingDict(
             {"project-name": project_name, "project-path": project_path}
         )
-        self._tasks: Dict[str, BaseTask] = {}
-        self._override_tasks: Dict[str, list] = {}
 
+        self._tasks: Dict[str, Dict[str, Any]] = dict(*args, **kwargs)
         self._index()
 
-    def __len__(self):
-        return len(self._tasks)
-
-    def __repr__(self):
-        return self._tasks.__repr__()
-
     def _index(self):
+        skip_tasks: List[str] = list(config.get_config("tasks", "skip"))
+        # fmt: off
         self._tasks = {
-            n.task_id(): n(self._data)
+            n.task_id(): {
+                "class": n(self._data),
+                "overridden": False,
+                "overrider": None,
+            }
             for n in BaseTask.__subclasses__()
-            if n.lang_id() in self._langs
-            and n.task_id() not in config.get_config("tasks", "skip")
+            if n.task_id() not in skip_tasks  # Check if the task should be skipped
+            and n.lang_id() in self._langs  # Check if the task is in the langs specified
+            and (n.mixin_id() in self._mixins  # Check if the task is in the mixins specified
+                 or n.mixin_id() is None)  # or if it is not a mixin
         }
+        # fmt: on
 
         for task in self._tasks:
-            for override_task in self._tasks[task].overrides():
+            override_tasks: list = []
+            for override_task in self._tasks[task]["class"].overrides():
                 try:
-                    self._override_tasks[override_task].append(
-                        self._tasks[task].task_id()
-                    )
+                    override_tasks[override_task].append(self._tasks[task].task_id())
                     spinner.print_error(
                         "Tasks: {} both attempt to override task: '{}'".format(
                             self._override_tasks[override_task], override_task
@@ -70,34 +81,30 @@ class TaskIndex:
                     )
                     sys.exit(1)
                 except KeyError:
-                    self._override_tasks[override_task] = [self._tasks[task].task_id()]
+                    override_tasks[override_task] = [self._tasks[task].task_id()]
+                    self._override(override_task, task)
 
-    def _task(self, task: str) -> BaseTask:
-        return self._tasks[task]
+    def _override(self, overridden: str, overrider: str):
+        self._tasks[overridden]["overridden"] = True
+        self._tasks[overridden]["overrider"] = overrider
 
-    def lang_id(self, task: str) -> str:
-        return self._task(task).lang_id()
+    def __setitem__(self, key: str, value):
+        self._tasks[key] = value
 
-    def task_id(self, task: str) -> str:
-        return self._task(task).task_id()
+    def __getitem__(self, key: str):
+        return self._tasks[key]
 
-    def task_ids(self) -> list:
-        return list(self._tasks.keys())
+    def __delitem__(self, key: str):
+        del self._tasks[key]
 
-    def depends(self, task: str) -> set:
-        return self._task(task).depends()
+    def __iter__(self):
+        return iter(self._tasks)
 
-    def overrides(self, task: str) -> list:
-        try:
-            return self._override_tasks[task]
-        except KeyError:
-            return []
+    def __len__(self):
+        return len(self._tasks)
 
-    def config_defaults(self, task: str) -> Dict[str, dict]:
-        return self._task(task).config_defaults()
-
-    def run(self, task: str):
-        self._task(task).run()
+    def __repr__(self):
+        return self._tasks.__repr__()
 
 
 class TaskGraph:
@@ -112,32 +119,21 @@ class TaskGraph:
     def tasks(self) -> TaskIndex:
         return self._tasks
 
-    @tasks.setter
-    def tasks(self, tasks: Dict[str, BaseTask]):
-        self._tasks = tasks
-        self._build_graph()
-
     def _build_graph(self):
         # Assemble the initial nodes and edges
-        nodes: list = self._tasks.task_ids()
-        edges: list = [
-            (task, dep)
+        nodes: List[str] = self._tasks.keys()
+        edges: List[Tuple[str, str]] = [
+            (
+                task,
+                self._tasks[dep]["overrider"]
+                if self._tasks[dep]["overridden"]
+                else dep,
+            )
             for task in nodes
-            for dep in self._tasks.depends(task)
+            if not self._tasks[task]["overridden"]
+            for dep in self._tasks[task]["class"].depends()
             if not set()
         ]
-
-        # Process overrides
-        for node in nodes:
-            overrider = self._tasks.overrides(node)
-            if overrider:
-                nodes.remove(node)
-                for edge in edges:
-                    if edge[0] == node:
-                        edges.remove(edge)
-
-                    if edge[1] == node:
-                        edges[edges.index(edge)] = (edge[0], overrider[0])
 
         self._graph.add_nodes_from(nodes, success=False, error=False)
         self._graph.add_edges_from(edges)
@@ -151,7 +147,7 @@ class TaskGraph:
                 and not len(list(self._graph.successors(node))) > 0
             ):
                 try:
-                    self._tasks.run(node)
+                    self._tasks[node]["class"].run()
                     self._graph.nodes[node]["success"] = True
                     edges: list = [
                         (dep, node) for dep in self._graph.predecessors(node)
@@ -185,7 +181,9 @@ def create_project(project_name: str, state: State):
     if state.lang is not None:
         langs.append(state.lang)
 
-    tasks: TaskIndex = TaskIndex(project_name, project_path, langs)
+    mixins: list = list(config.get_config(state.lang, "mixins")) + state.mixins
+
+    tasks: TaskIndex = TaskIndex(project_name, project_path, langs, mixins)
     graph: TaskGraph = TaskGraph(tasks)
 
     spinner.start()
