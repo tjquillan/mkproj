@@ -75,7 +75,9 @@ class TaskIndex(MutableMapping):
             override_tasks: Dict[str, List[str]] = {}
             for override_task in self._tasks[task]["class"].overrides():
                 try:
-                    override_tasks[override_task].append(self._tasks[task]["class"].task_id())
+                    override_tasks[override_task].append(
+                        self._tasks[task]["class"].task_id()
+                    )
                     spinner.print_error(
                         "Tasks: {} both attempt to override task: '{}'".format(
                             override_tasks[override_task], override_task
@@ -83,7 +85,9 @@ class TaskIndex(MutableMapping):
                     )
                     sys.exit(1)
                 except KeyError:
-                    override_tasks[override_task] = [self._tasks[task]["class"].task_id()]
+                    override_tasks[override_task] = [
+                        self._tasks[task]["class"].task_id()
+                    ]
                     self._override(override_task, task)
 
     def _override(self, overridden: str, overrider: str):
