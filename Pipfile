@@ -21,6 +21,7 @@ invoke = "*"
 ipython = "*"
 isort = "*"
 requests = "*"
+twine = "*"
 
 [requires]
 python_version = "3.7"
