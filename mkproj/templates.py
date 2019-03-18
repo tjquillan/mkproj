@@ -31,5 +31,5 @@ def get(section: str, template: str):
     return ENV.get_template(template_path)
 
 
-def write_to_file(file, template: Template, data: dict):
-    file.write(template.render(data))
+def write_to_file(file, template: Template, data: dict = None):
+    file.write(template.render(data or {}))

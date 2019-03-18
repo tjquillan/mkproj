@@ -38,9 +38,13 @@ class MakeInitFile(BaseTask):
         return "python"
 
     def _run(self) -> str:
-        open(
-            "{0}/__init__.py".format(str(self._data["source-path"].absolute())), "a"
-        ).close()
+        with open(
+            "{0}/__init__.py".format(str(self._data["source-path"].absolute())), "w"
+        ) as init_file:
+            templates.write_to_file(
+                init_file,
+                templates.get(self.lang_id(), "__init__.py")
+            )
         return "Init file created at: {}".format(
             "{}/__init__.py".format(self._data["source-path"].absolute())
         )
@@ -57,9 +61,13 @@ class MakeMainFile(BaseTask):
         return "python"
 
     def _run(self) -> str:
-        open(
-            "{0}/__main__.py".format(str(self._data["source-path"].absolute())), "a"
-        ).close()
+        with open(
+            "{0}/__main__.py".format(str(self._data["source-path"].absolute())), "w"
+        ) as main_file:
+            templates.write_to_file(
+                main_file,
+                templates.get(self.lang_id(), "__main__.py")
+            )
         return "Main file created at: {}".format(
             "{}/__main__.py".format(self._data["source-path"].absolute())
         )
