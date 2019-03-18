@@ -5,7 +5,7 @@ mkproj is an opinionated tool to generate base projects for a multitude of langu
 ## Supported Languages
 
 * Python
-* Go [WIP]
+* Go [[WIP](https://github.com/iboyperson/mkproj/tree/go-lang)]
 * More To Come!
 
 ## Usage
