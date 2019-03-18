@@ -35,6 +35,14 @@ def overrides(*tasks):
 
 
 class TaskIndex(MutableMapping):
+    """
+    An index of tasks. This index is built with the constraints langs and mixins.
+    Langs is responsible for the specification of the languages the project should
+    be created using. Mixins are used for differentiation within a language (Ex: within python
+    pipenv and poetry would be mixins on top of the base python tasks as they accomplish many
+    of the same goals).
+    """
+
     def __init__(
         self,
         project_name: str,
@@ -72,27 +80,20 @@ class TaskIndex(MutableMapping):
         # fmt: on
 
         for task in self._tasks:
-            override_tasks: Dict[str, List[str]] = {}
-            for override_task in self._tasks[task]["class"].overrides():
-                try:
-                    override_tasks[override_task].append(
-                        self._tasks[task]["class"].task_id()
-                    )
-                    spinner.print_error(
-                        "Tasks: {} both attempt to override task: '{}'".format(
-                            override_tasks[override_task], override_task
-                        )
-                    )
-                    sys.exit(1)
-                except KeyError:
-                    override_tasks[override_task] = [
-                        self._tasks[task]["class"].task_id()
-                    ]
-                    self._override(override_task, task)
+            for overridden_task in self._tasks[task]["class"].overrides():
+                self._override(overridden_task, task)
 
     def _override(self, overridden: str, overrider: str):
-        self._tasks[overridden]["overridden"] = True
-        self._tasks[overridden]["overrider"] = overrider
+        if not self._tasks[overridden]["overridden"]:
+            self._tasks[overridden]["overridden"] = True
+            self._tasks[overridden]["overrider"] = overrider
+        else:
+            spinner.print_error(
+                "Tasks: {} both attempt to override task: '{}'".format(
+                    [self._tasks[overridden]["overrider"], overrider], overridden
+                )
+            )
+            sys.exit(1)
 
     def __setitem__(self, key: str, value):
         self._tasks[key] = value
@@ -114,6 +115,11 @@ class TaskIndex(MutableMapping):
 
 
 class TaskGraph:
+    """
+    A dependency graph of tasks in a task index. This class is responsable for tracking
+    task dependencies and running tasks.
+    """
+
     def __init__(self, tasks: TaskIndex):
         self._graph: networkx.DiGraph = networkx.DiGraph()
 

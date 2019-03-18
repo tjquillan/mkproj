@@ -31,7 +31,7 @@ def lang_option(f):
         default=None,
         nargs=1,
         callback=callback,
-        help="Specify which language to create project with. If none is specified a generic template will be generated.",  # noqa
+        help="Specify which language to create project with. If none are specified a generic template will be generated.",  # noqa
         expose_value=False,
     )(f)
 
@@ -54,7 +54,7 @@ def mixins_option(f):
         default=None,
         nargs=1,
         callback=callback,
-        help="Specify which mixins to create project with. Mixins should be seperated with a comma",  # noqa
+        help="""Specify which mixins to create project with. Mixins should be seperated with a comma. If none are specified no mixins will be used.""",  # noqa
         expose_value=False,
     )(f)
 
