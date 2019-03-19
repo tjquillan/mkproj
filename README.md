@@ -8,6 +8,10 @@ mkproj is an opinionated tool to generate base projects for a multitude of langu
 * Go [[WIP](https://github.com/iboyperson/mkproj/tree/go-lang)]
 * More To Come!
 
+## Installation
+
+Simply run `pip install mkproj`
+
 ## Usage
 
 Usage is simple! You simply type `mkproj` then specify the language and mixins you want to use.
