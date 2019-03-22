@@ -1,5 +1,5 @@
-flake8==3.7.6
+flake8==3.7.7
 flake8-bugbear==18.8.0
 flake8-builtins==1.4.1
-flake8-comprehensions==2.0.0
+flake8-comprehensions==2.1.0
 flake8-mypy==17.8.0
