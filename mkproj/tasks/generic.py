@@ -35,9 +35,7 @@ class MakeReadme(BaseTask):
             "{0}/README.md".format(str(self._data["project-path"].absolute())), "w"
         ) as file:
             templates.write_to_file(
-                file,
-                templates.get("generic", "README.md"),
-                {"name": self._data["project-name"]},
+                file, templates.get_template("generic", "README.md"), self._data
             )
         return "README created in {}".format(self._data["project-path"].absolute())
 

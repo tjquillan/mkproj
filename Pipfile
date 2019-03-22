@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+jinja2 = "*"
 networkx = "*"
+pluginbase = "*"
 pyyaml = "*"
 yaspin = "*"
-pluginbase = "*"
 
 [dev-packages]
 mkproj = {editable = true,path = "."}
