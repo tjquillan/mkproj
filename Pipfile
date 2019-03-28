@@ -4,7 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+jinja2 = "*"
 networkx = "*"
+pluginbase = "*"
 pyyaml = "*"
 yaspin = "*"
 
@@ -14,11 +16,13 @@ black = "==18.9b0"
 flake8 = "*"
 flake8-bugbear = "*"
 flake8-builtins = "*"
+flake8-comprehensions = "*"
 flake8-mypy = "*"
 invoke = "*"
 ipython = "*"
 isort = "*"
 requests = "*"
+twine = "*"
 
 [requires]
 python_version = "3.7"

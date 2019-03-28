@@ -6,11 +6,12 @@ from .. import environment
 from ..__version__ import __version__
 from ..config import set_config
 from ..core import create_project
-from .options import CONTEXT_SETTINGS, lang_option, pass_state
+from .options import CONTEXT_SETTINGS, lang_option, mixins_option, pass_state
 
 
 @command(context_settings=CONTEXT_SETTINGS)
 @lang_option
+@mixins_option
 @pass_state
 @pass_context
 @option("--verbose", "-v", is_flag=True)

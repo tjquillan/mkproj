@@ -1,0 +1,43 @@
+dist: xenial
+language: python
+
+python:
+- '3.6'
+- 3.6-dev
+- '3.7'
+- 3.7-dev
+
+env:
+- MKPROJ_LANG="generic"
+- MKPROJ_LANG="python"
+
+install: python setup.py -q install
+
+script: mkproj -l $MKPROJ_LANG "${MKPROJ_LANG}_proj"
+
+jobs:
+  include:
+  - stage: lint
+    python: '3.7'
+    env: MKPROJ_LANG="generic"
+    install: pip install -r ci-requirements.txt
+    script: flake8
+  - stage: deploy
+    python: '3.7'
+    env: MKPROJ_LANG="generic"
+    install: skip
+    script: skip
+    deploy: &pypi
+      provider: pypi
+      user: "$PYPI_USER"
+      password:
+        secure: "$PYPI_PASSWORD"
+      distributions: sdist bdist_wheel
+      on:
+        tags: true
+
+stages:
+  - lint
+  - test
+  - name: deploy
+    if: branch = master

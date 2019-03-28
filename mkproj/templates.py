@@ -9,7 +9,7 @@ from jinja2 import (
     select_autoescape,
 )
 
-from . import environment
+from . import LockingDict, config, environment
 
 
 ENV: Environment = Environment(
@@ -26,10 +26,14 @@ ENV: Environment = Environment(
 )
 
 
-def get(section: str, template: str):
+def get_template(section: str, template: str) -> Template:
     template_path: str = "{0}/{1}.j2".format(section, template)
     return ENV.get_template(template_path)
 
 
-def write_to_file(file, template: Template, data: dict):
-    file.write(template.render(data))
+def render(template: Template, task_data: LockingDict) -> str:
+    return template.render({"config": config.get_config, "data": task_data.get})
+
+
+def write_to_file(file, template: Template, task_data: LockingDict):
+    file.write(render(template, task_data))

@@ -1,17 +1,20 @@
 import sys
 
+from collections.abc import MutableMapping
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict, List, Tuple
 
 import networkx
 
-from . import LockingDict, config, spinner
+from pluginbase import PluginBase, PluginSource
+
+from . import LockingDict, config, environment, spinner
 from .bases import BaseTask, TaskFailedException
 
 
-def depends(*deps):
+def depends(*tasks):
     def depends() -> set:
-        return set(deps)
+        return set(tasks)
 
     def wrapper(cls):
         setattr(cls, depends.__name__, staticmethod(depends))
@@ -20,55 +23,155 @@ def depends(*deps):
     return wrapper
 
 
+def overrides(*tasks):
+    def overrides() -> set:
+        return set(tasks)
+
+    def wrapper(cls):
+        setattr(cls, overrides.__name__, staticmethod(overrides))
+        return cls
+
+    return wrapper
+
+
+class TaskIndex(MutableMapping):
+    """
+    An index of tasks. This index is built with the constraints langs and mixins.
+    Langs is responsible for the specification of the languages the project should
+    be created using. Mixins are used for differentiation within a language (Ex: within python
+    pipenv and poetry would be mixins on top of the base python tasks as they accomplish many
+    of the same goals).
+    """
+
+    def __init__(
+        self,
+        project_name: str,
+        project_path: Path,
+        langs: List[str],
+        mixins: List[str],
+        *args,
+        **kwargs,
+    ):
+        self._langs: List[str] = langs
+        self._mixins: List[str] = mixins
+
+        self._data: LockingDict = LockingDict(
+            {"project-name": project_name, "project-path": project_path}
+        )
+
+        self._tasks: Dict[str, Dict[str, Any]] = dict(*args, **kwargs)
+        self._index()
+
+    def _index(self):
+        skip_tasks: List[str] = list(config.get_config("tasks", "skip"))
+        # fmt: off
+        self._tasks = {
+            n.task_id(): {
+                "class": n(self._data),
+                "overridden": False,
+                "overrider": None,
+            }
+            for n in BaseTask.__subclasses__()
+            if n.task_id() not in skip_tasks  # Check if the task should be skipped
+            and n.lang_id() in self._langs  # Check if the task is in the langs specified
+            and (n.mixin_id() in self._mixins  # Check if the task is in the mixins specified
+                 or n.mixin_id() is None)  # or if it is not a mixin
+        }
+        # fmt: on
+
+        for task in self._tasks:
+            for overridden_task in self._tasks[task]["class"].overrides():
+                self._override(overridden_task, task)
+
+    def _override(self, overridden: str, overrider: str):
+        if not self._tasks[overridden]["overridden"]:
+            self._tasks[overridden]["overridden"] = True
+            self._tasks[overridden]["overrider"] = overrider
+        else:
+            spinner.print_error(
+                "Tasks: {} both attempt to override task: '{}'".format(
+                    [self._tasks[overridden]["overrider"], overrider], overridden
+                )
+            )
+            sys.exit(1)
+
+    def __setitem__(self, key: str, value):
+        self._tasks[key] = value
+
+    def __getitem__(self, key: str):
+        return self._tasks[key]
+
+    def __delitem__(self, key: str):
+        del self._tasks[key]
+
+    def __iter__(self):
+        return iter(self._tasks)
+
+    def __len__(self):
+        return len(self._tasks)
+
+    def __repr__(self):
+        return self._tasks.__repr__()
+
+
 class TaskGraph:
-    def __init__(self, tasks: Dict[str, BaseTask]):
+    """
+    A dependency graph of tasks in a task index. This class is responsable for tracking
+    task dependencies and running tasks.
+    """
+
+    def __init__(self, tasks: TaskIndex):
         self._graph: networkx.DiGraph = networkx.DiGraph()
 
-        self._tasks = tasks
+        self._tasks: TaskIndex = tasks
 
         self._build_graph()
 
     @property
-    def tasks(self) -> Dict[str, BaseTask]:
+    def tasks(self) -> TaskIndex:
         return self._tasks
 
-    @tasks.setter
-    def tasks(self, tasks: Dict[str, BaseTask]):
-        self._tasks = tasks
-        self._build_graph()
-
     def _build_graph(self):
-        nodes: list = list(self._tasks[task].task_id() for task in self._tasks.keys())
-        self._graph.add_nodes_from(nodes, success=False, error=False)
-        edges: list = list(
-            (self._tasks[task].task_id(), dep)
-            for task in self._tasks.keys()
-            for dep in self._tasks[task].depends()
+        # Assemble the initial nodes and edges
+        nodes: List[str] = self._tasks.keys()
+        edges: List[Tuple[str, str]] = [
+            (
+                task,
+                self._tasks[dep]["overrider"]
+                if self._tasks[dep]["overridden"]
+                else dep,
+            )
+            for task in nodes
+            if not self._tasks[task]["overridden"]
+            for dep in self._tasks[task]["class"].depends()
             if not set()
-        )
+        ]
+
+        self._graph.add_nodes_from(nodes, success=False, error=False)
         self._graph.add_edges_from(edges)
 
     def _run_nodes(self, nodes: networkx.classes.reportviews.NodeView):
         rerun_nodes: list = []
 
         for node in nodes:
-            if (
-                not self._graph.nodes[node]["error"]
-                and not len(list(self._graph.successors(node))) > 0
-            ):
-                try:
-                    self._tasks[node].run()
-                    self._graph.nodes[node]["success"] = True
-                    edges: list = list(
-                        (dep, node) for dep in self._graph.predecessors(node)
-                    )
-                    self._graph.remove_edges_from(edges)
-                except TaskFailedException:
-                    self._graph.nodes[node]["error"] = True
-                    for dep in self._graph.predecessors(node):
-                        self._graph.nodes[dep]["error"] = True
-            elif not self._graph.nodes[node]["error"]:
-                rerun_nodes.append(node)
+            if not self._tasks[node]["overridden"]:
+                if (
+                    not self._graph.nodes[node]["error"]
+                    and not len(list(self._graph.successors(node))) > 0
+                ):
+                    try:
+                        self._tasks[node]["class"].run()
+                        self._graph.nodes[node]["success"] = True
+                        edges: list = [
+                            (dep, node) for dep in self._graph.predecessors(node)
+                        ]
+                        self._graph.remove_edges_from(edges)
+                    except TaskFailedException:
+                        self._graph.nodes[node]["error"] = True
+                        for dep in self._graph.predecessors(node):
+                            self._graph.nodes[dep]["error"] = True
+                elif not self._graph.nodes[node]["error"]:
+                    rerun_nodes.append(node)
 
         if rerun_nodes:
             self._run_nodes(rerun_nodes)
@@ -87,21 +190,21 @@ def create_project(project_name: str, state: State):
         spinner.print_error("Project already exists. Aborting...")
         sys.exit(1)
 
-    data: LockingDict = LockingDict(
-        {"project-name": project_name, "project-path": project_path}
-    )
-
     langs: list = ["generic"]
     if state.lang is not None:
         langs.append(state.lang)
 
-    tasks: dict = dict(
-        (n.task_id(), n(data))
-        for n in BaseTask.__subclasses__()
-        if n.lang_id() in langs
-        and n.task_id() not in config.get_config("tasks", "skip")
-    )
+    mixins: list = list(config.get_config(state.lang, "mixins")) + state.mixins
 
+    # Load external tasks
+    plugin_base: PluginBase = PluginBase(package="mkproj.plugins")
+    plugin_source: PluginSource = plugin_base.make_plugin_source(
+        searchpath=["{}/tasks".format(environment.APP_DIRS.user_data_dir)]
+    )
+    for plugin in plugin_source.list_plugins():
+        plugin_source.load_plugin(plugin)
+
+    tasks: TaskIndex = TaskIndex(project_name, project_path, langs, mixins)
     graph: TaskGraph = TaskGraph(tasks)
 
     spinner.start()

@@ -4,7 +4,8 @@ click==7.0
 Jinja2==2.10
 log_symbols==0.0.12
 networkx==2.2
-pyyaml==3.13
+pluginbase==1.0.0
+pyyaml==5.1
 yaspin==0.14.1
 
 # Crayons Deps
@@ -12,4 +13,7 @@ colorama==0.4.1
 shellingham==1.2.8
 
 # Jinja2 Deps
-markupsafe==1.1.0
+markupsafe==1.1.1
+
+# NetworkX Deps
+decorator==4.4.0

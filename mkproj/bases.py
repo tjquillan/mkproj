@@ -14,19 +14,25 @@ class BaseTask(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def lang_id() -> str:
+    def task_id() -> str:
         pass
 
     @staticmethod
     @abstractmethod
-    def task_id() -> str:
+    def lang_id() -> str:
         pass
 
-    # This does not use the actual abstractmethod decorator as it can also
-    # be added by the depends decorator.
+    @staticmethod
+    def mixin_id() -> str:
+        return None
+
     @staticmethod
     def depends() -> set:
-        raise NotImplementedError("BaseTask must implement method 'depends'")
+        return set()
+
+    @staticmethod
+    def overrides() -> set:
+        return set()
 
     @staticmethod
     def config_defaults() -> Dict[str, dict]:

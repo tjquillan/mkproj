@@ -24,7 +24,7 @@ def add_section_defaults(section: dict):
 
 try:
     with open(CONFIG_FILE, "r") as cfg:
-        config_data = yaml.load(cfg)
+        config_data = yaml.load(cfg, Loader=yaml.FullLoader)
 except FileNotFoundError:
     config_data = {}
 
@@ -44,7 +44,10 @@ def get_config(section: str, key: str):
     try:
         return config_data[section][key]
     except (NameError, KeyError):
-        return DEFAULT_VALUES[section][key]
+        try:
+            return DEFAULT_VALUES[section][key]
+        except (NameError, KeyError):
+            return ""
 
 
 def getboolean_config(section: str, key: str) -> bool:
