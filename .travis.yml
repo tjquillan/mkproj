@@ -35,10 +35,10 @@ jobs:
         secure: "$PYPI_PASSWORD"
       distributions: sdist bdist_wheel
       on:
+        branch: master
         tags: true
 
 stages:
   - lint
   - test
-  - name: deploy
-    if: branch = master
+  - deploy
