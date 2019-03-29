@@ -13,7 +13,7 @@ CONFIG_FILE: str = "{0}/mkproj.yml".format(environment.APP_DIRS.user_config_dir)
 
 DEFAULT_VALUES: Dict[str, dict] = {
     "core": {"license": "MIT"},
-    "user": {"name": "John Doe", "email": "john.doe@gmail.com"},
+    "user": {"name": "John Doe", "username": "jdoe", "email": "john.doe@gmail.com"},
     "tasks": {"skip": ""},
 }
 
