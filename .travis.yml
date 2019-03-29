@@ -10,6 +10,7 @@ python:
 env:
 - MKPROJ_LANG="generic"
 - MKPROJ_LANG="python"
+- MKPROJ_LANG="go"
 
 install: python setup.py -q install
 
