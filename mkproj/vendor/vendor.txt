@@ -1,7 +1,7 @@
 # Main Deps
 appdirs==1.4.3
 click==7.0
-Jinja2==2.10
+Jinja2==2.10.1
 log_symbols==0.0.12
 networkx==2.2
 pluginbase==1.0.0
