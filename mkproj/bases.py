@@ -49,5 +49,7 @@ class BaseTask(metaclass=ABCMeta):
             msg: str = self._run()
             spinner.print_info(msg)
         except Exception as e:
-            spinner.print_error("Task with id: '{}' has failed: {}".format(self.task_id(), e))
+            spinner.print_error(
+                "Task with id: '{}' has failed: {}".format(self.task_id(), e)
+            )
             raise TaskFailedException

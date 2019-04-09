@@ -1,4 +1,5 @@
 import os
+
 from typing import Dict
 
 from .. import config, templates
@@ -19,10 +20,7 @@ class MakeMainFile(BaseTask):
 
     def _run(self):
         file_path: str = "{}/main.go".format(self._data["project-path"].absolute())
-        with open(
-            file_path,
-            "w"
-        ) as main_file:
+        with open(file_path, "w") as main_file:
             templates.write_to_file(
                 main_file, templates.get_template("go", "main.go"), self._data
             )
