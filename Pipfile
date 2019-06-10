@@ -12,7 +12,7 @@ yaspin = "*"
 
 [dev-packages]
 mkproj = {editable = true,path = "."}
-black = "==18.9b0"
+black = "==19.3b0"
 flake8 = "*"
 flake8-bugbear = "*"
 flake8-builtins = "*"
