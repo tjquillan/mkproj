@@ -5,8 +5,8 @@ Jinja2==2.10.1
 log_symbols==0.0.12
 networkx==2.3
 pluginbase==1.0.0
-pyyaml==5.1
-yaspin==0.14.2
+pyyaml==5.1.1
+yaspin==0.14.3
 
 # Crayons Deps
 colorama==0.4.1
