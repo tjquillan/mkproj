@@ -2,7 +2,7 @@ import os
 
 from pathlib import Path
 
-from .. import templates
+from .. import config, templates
 from ..bases import BaseTask
 from ..core import depends
 from ..subprocess import call
@@ -118,3 +118,34 @@ class PipenvInit(BaseTask):
         call(["pipenv", "install"])
 
         return "Project initialized with pipenv"
+
+
+@depends("make-project-dir")
+class PoetryInit(BaseTask):
+    @staticmethod
+    def task_id() -> str:
+        return "poetry-init"
+
+    @staticmethod
+    def lang_id() -> str:
+        return "python"
+
+    @staticmethod
+    def mixin_id() -> str:
+        return "poetry"
+
+    def _run(self) -> str:
+        os.chdir(self._data["project-path"].absolute())
+        call(
+            [
+                "poetry",
+                "init",
+                "--name",
+                self._data["project-name"],
+                "--author",
+                config.get_config("user", "name"),
+                "--no-interaction",
+            ]
+        )
+
+        return "Project initialized with poetry"
