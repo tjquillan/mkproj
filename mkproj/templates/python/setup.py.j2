@@ -10,7 +10,7 @@ with open(os.path.join(here, "{{ data("project-name") }}", "__version__.py")) as
     exec(f.read(), about)
 
 setup(
-    name='{{ config("user", "name") }}',
+    name='{{ data("project-name") }}',
     version=about["__version__"],
     packages=find_packages(),
     url='',
