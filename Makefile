@@ -1,3 +1,7 @@
+lint:
+	flake8 mkproj
+	mypy -p mkproj
+
 format:
 	black mkproj
 	isort -y
