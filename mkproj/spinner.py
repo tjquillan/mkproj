@@ -24,7 +24,7 @@ class PrintLevel(Enum):
 def _format_string(level: PrintLevel, string: str, indent: bool = False) -> str:
     formated_str: str = "{0} {1}".format(level, string)
     if indent:
-        formated_str: str = "{0}{1}".format(("\t" * INDENT_SIZE), formated_str)
+        formated_str = "{0}{1}".format(("\t" * INDENT_SIZE), formated_str)
     return formated_str
 
 
