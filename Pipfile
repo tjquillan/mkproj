@@ -21,6 +21,7 @@ flake8-mypy = "*"
 invoke = "*"
 ipython = "*"
 isort = "*"
+mypy = "*"
 requests = "*"
 twine = "*"
 
