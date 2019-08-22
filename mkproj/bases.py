@@ -24,7 +24,7 @@ class BaseTask(metaclass=ABCMeta):
 
     @staticmethod
     def mixin_id() -> str:
-        return None
+        pass
 
     @staticmethod
     def depends() -> set:
