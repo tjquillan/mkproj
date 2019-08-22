@@ -1,5 +1,5 @@
 lint:
-	flake8 mkproj
+	pylint mkproj
 	mypy -p mkproj
 
 format:

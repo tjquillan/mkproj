@@ -17,7 +17,7 @@ from .options import CONTEXT_SETTINGS, lang_option, mixins_option, pass_state
 @option("--verbose", "-v", is_flag=True)
 @version_option(prog_name=crayons.normal("mkproj", bold=True), version=__version__)
 @argument("project_name", nargs=1)
-def cli(ctx, state, project_name, lang=False, verbose=False):
+def cli(ctx, state, project_name, lang=False, verbose=False):  # pylint: disable=unused-argument
     environment.verbosity = verbose
 
     create_project(project_name, state)
@@ -32,4 +32,4 @@ def mkproj_config(config, value):
 
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pylint: disable=no-value-for-parameter

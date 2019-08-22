@@ -47,8 +47,8 @@ class LockingDict(MutableMapping):
             return self._dict.__repr__()
 
 
-from .cli import cli, mkproj_config  # isort:skip # noqa: F401
-from .tasks import *  # isort:skip # noqa: F401,F403
+from .cli import cli, mkproj_config  # isort:skip # pylint: disable=wrong-import-position
+from .tasks import *  # isort:skip # pylint: disable=wrong-import-position
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pylint: disable=no-value-for-parameter

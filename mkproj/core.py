@@ -13,7 +13,7 @@ from .bases import BaseTask, TaskFailedException
 
 
 def depends(*tasks):
-    def depends() -> set:
+    def depends() -> set:  # pylint: disable=redefined-outer-name
         return set(tasks)
 
     def wrapper(cls):
@@ -24,7 +24,7 @@ def depends(*tasks):
 
 
 def overrides(*tasks):
-    def overrides() -> set:
+    def overrides() -> set:  # pylint: disable=redefined-outer-name
         return set(tasks)
 
     def wrapper(cls):
@@ -157,7 +157,7 @@ class TaskGraph:
             if not self._tasks[node]["overridden"]:
                 if (
                     not self._graph.nodes[node]["error"]
-                    and not len(list(self._graph.successors(node))) > 0
+                    and not list(self._graph.successors(node))
                 ):
                     try:
                         self._tasks[node]["class"].run()
@@ -180,7 +180,7 @@ class TaskGraph:
         self._run_nodes(self._graph.nodes)
 
 
-from .cli.options import State  # isort:skip # noqa: E402
+from .cli.options import State  # isort:skip # pylint: disable=wrong-import-position
 
 
 def create_project(project_name: str, state: State):
