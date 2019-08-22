@@ -22,7 +22,7 @@ jobs:
     python: '3.7'
     env: MKPROJ_LANG="generic"
     install: pip install -r ci-requirements.txt
-    script: flake8
+    script: make lint
   - stage: deploy
     python: '3.7'
     env: MKPROJ_LANG="generic"
