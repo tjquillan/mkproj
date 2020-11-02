@@ -1,3 +1,7 @@
+# Abandoned
+
+I have stoped maintaining this in favor of [Cookiecutter](https://github.com/cookiecutter/cookiecutter)
+
 # mkproj
 
 [![Build Status](https://travis-ci.com/iboyperson/mkproj.svg?branch=master)](https://travis-ci.com/iboyperson/mkproj)
